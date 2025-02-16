@@ -5,7 +5,7 @@ export async function POST(request: Request) {
   try {
     const { username, password, generalContext, forums } = await request.json();
 
-    // Verify user credentials again
+    // Verify user credentials against database
     const userResult = await sql`
       SELECT id FROM users 
       WHERE username = ${username} AND password = ${password}

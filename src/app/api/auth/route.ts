@@ -1,36 +1,55 @@
 import { NextResponse } from 'next/server';
 import { sql } from '@vercel/postgres';
+import { RedditClient } from '@/lib/reddit';
 
 export async function POST(request: Request) {
   try {
     const { username, password } = await request.json();
-
-    // Check reddit API first
-    const externalValidation = await fetch('https://external-auth-api.com/validate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-
-    if (!externalValidation.ok) {
-      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    const redditClient = new RedditClient();
+    
+    const isValidRedditUser = await redditClient.validateCredentials(username, password);
+    if (!isValidRedditUser) {
+      return NextResponse.json({ error: 'Invalid Reddit credentials' }, { status: 401 });
     }
 
-    // Check if user exists in our database
+    // Get or create user
+    let userId;
     const userResult = await sql`
-      SELECT username FROM users 
-      WHERE username = ${username} AND password = ${password}
+      SELECT id, username FROM users 
+      WHERE username = ${username}
     `;
 
     if (userResult.rows.length === 0) {
-      // Add new user if externally validated but not in our database
-      await sql`
+      const newUser = await sql`
         INSERT INTO users (username, password)
         VALUES (${username}, ${password})
+        RETURNING id
       `;
+      userId = newUser.rows[0].id;
+    } else {
+      userId = userResult.rows[0].id;
     }
 
-    return NextResponse.json({ success: true });
+    // Fetch configurations
+    const configResult = await sql`
+      SELECT id, general_context
+      FROM configurations
+      WHERE user_id = ${userId}
+    `;
+
+    const forumsResult = await sql`
+      SELECT id, identifier, specific_context
+      FROM forums
+      WHERE config_id = ${configResult.rows[0]?.id}
+    `;
+
+    return NextResponse.json({
+      success: true,
+      configurations: {
+        generalContext: configResult.rows[0]?.general_context || '',
+        forums: forumsResult.rows || []
+      }
+    });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Authentication failed' },

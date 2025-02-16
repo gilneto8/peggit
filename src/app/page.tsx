@@ -9,6 +9,20 @@ interface Forum {
   specificContext: string;
 }
 
+interface ForumResponse {
+  id: number;
+  identifier: string;
+  specific_context: string;
+}
+
+interface AuthResponse {
+  success: boolean;
+  configurations: {
+    generalContext: string;
+    forums: ForumResponse[];
+  };
+}
+
 interface LoginState {
   isLoggedIn: boolean;
   username: string;
@@ -29,10 +43,17 @@ export default function ForumConfig() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password }),
       });
-
+  
       if (!response.ok) throw new Error('Authentication failed');
-
+      
+      const data: AuthResponse = await response.json();
       setLoginState({ isLoggedIn: true, username });
+      setGeneralContext(data.configurations.generalContext);
+      setForums(data.configurations.forums.map(forum => ({
+        id: forum.id.toString(),
+        identifier: forum.identifier,
+        specificContext: forum.specific_context
+      })));
       setError(null);
     } catch (err) {
       setError('Login failed. Please check your credentials.');
