@@ -2,18 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-
-interface Forum {
-  id: string;
-  identifier: string;
-  specificContext: string;
-}
-
-interface StoredForum {
-  id: number;
-  identifier: string;
-  specific_context: string;
-}
+import { Forum, StoredForum } from '@/types/config';
 
 export default function ConfigPage() {
   const router = useRouter();

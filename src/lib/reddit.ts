@@ -1,6 +1,7 @@
+import { RedditClientInterface } from '@/types/reddit';
 import snoowrap from 'snoowrap';
 
-export class RedditClient {
+export class RedditClient implements RedditClientInterface {
   private static instance: RedditClient;
 
   constructor() {};

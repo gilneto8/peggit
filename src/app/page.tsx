@@ -2,20 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-
-interface AuthResponse {
-  success: boolean;
-  configurations: {
-    generalContext: string;
-    forums: ForumResponse[];
-  };
-}
-
-interface ForumResponse {
-  id: number;
-  identifier: string;
-  specific_context: string;
-}
+import { AuthResponse } from '@/types/auth';
 
 export default function LoginPage() {
   const router = useRouter();
