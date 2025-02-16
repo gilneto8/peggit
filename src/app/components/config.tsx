@@ -22,23 +22,23 @@ const ConfigComponent = ({
   );
   const [error, setError] = useState<string | null>(null);
 
-  const validateSubreddits = async () => {
-    const validationResults = await Promise.all(
-      forums.map(async forum => {
-        if (!forum.identifier) return { ...forum, isValid: false };
-        try {
-          const response = await fetch(`/api/validate-subreddit?name=${forum.identifier}`);
-          const { exists } = await response.json();
-          return { ...forum, isValid: exists };
-        } catch (error) {
-          return { ...forum, isValid: false };
-        }
-      }),
-    );
+  // const validateSubreddits = async () => {
+  //   const validationResults = await Promise.all(
+  //     forums.map(async forum => {
+  //       if (!forum.identifier) return { ...forum, isValid: false };
+  //       try {
+  //         const response = await fetch(`/api/validate-subreddit?name=${forum.identifier}`);
+  //         const { exists } = await response.json();
+  //         return { ...forum, isValid: exists };
+  //       } catch (error) {
+  //         return { ...forum, isValid: false };
+  //       }
+  //     }),
+  //   );
 
-    setForums(validationResults);
-    return validationResults.every(forum => forum.isValid);
-  };
+  //   setForums(validationResults);
+  //   return validationResults.every(forum => forum.isValid);
+  // };
 
   const handleSubmit = async () => {
     if (isSaving) return;
