@@ -30,7 +30,6 @@ export default function ForumConfig() {
     try {
       const response = await fetch('/api/config');
       const { data } = await response.json();
-      
       if (data) {
         setUsername(data.username || '');
         setPassword(data.password || '');
