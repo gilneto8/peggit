@@ -22,23 +22,25 @@ const ConfigComponent = ({
   );
   const [error, setError] = useState<string | null>(null);
 
-  // const validateSubreddits = async () => {
-  //   const validationResults = await Promise.all(
-  //     forums.map(async forum => {
-  //       if (!forum.identifier) return { ...forum, isValid: false };
-  //       try {
-  //         const response = await fetch(`/api/validate-subreddit?name=${forum.identifier}`);
-  //         const { exists } = await response.json();
-  //         return { ...forum, isValid: exists };
-  //       } catch (error) {
-  //         return { ...forum, isValid: false };
-  //       }
-  //     }),
-  //   );
+  const validateSubreddits = async () => {
+    const validationResults = await Promise.all(
+      forums.map(async forum => {
+        if (!forum.identifier) return { ...forum, isValid: false };
 
-  //   setForums(validationResults);
-  //   return validationResults.every(forum => forum.isValid);
-  // };
+        try {
+          const response = await fetch(`/api/validate-subreddit?name=${forum.identifier}&username=${username}`);
+          const { exists } = await response.json();
+          return { ...forum, isValid: exists };
+        } catch (error) {
+          console.error(error);
+          return { ...forum, isValid: false };
+        }
+      }),
+    );
+
+    setForums(validationResults);
+    return validationResults.every(forum => forum.isValid);
+  };
 
   const handleSubmit = async () => {
     if (isSaving) return;
@@ -46,7 +48,8 @@ const ConfigComponent = ({
     setError(null);
 
     try {
-      const isValid = true; // await validateSubreddits();
+      const isValid = true;
+      await validateSubreddits();
       if (!isValid) {
         setError('One or more subreddits are invalid. Please check and try again.');
         setIsSaving(false);
@@ -138,7 +141,7 @@ const ConfigComponent = ({
                       const newForums = forums.map(f => (f.id === forum.id ? { ...f, identifier: e.target.value, isValid: undefined } : f));
                       setForums(newForums);
                     }}
-                    placeholder="Subreddit name (e.g. 'programming')"
+                    placeholder='Subreddit name'
                     className={`px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 w-full
                       focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
                       disabled:opacity-50 disabled:cursor-not-allowed

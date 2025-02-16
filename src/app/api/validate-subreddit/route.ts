@@ -1,21 +1,39 @@
 import { NextResponse } from 'next/server';
+import { sql } from '@vercel/postgres';
 import { RedditClient } from '@/lib/reddit';
+import { Crypt } from '@/lib/crypt';
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const subreddit = searchParams.get('name');
+    const username = searchParams.get('username');
 
-    if (!subreddit) {
-      console.log('what', subreddit);
-      return NextResponse.json({ error: 'Subreddit name is required' }, { status: 400 });
+    if (!subreddit || !username) {
+      return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
-    const exists = await RedditClient.getInstance().validateSubReddit(subreddit);
+    // Get encrypted credentials
+    const userResult = await sql`
+      SELECT encrypted_password, password_iv, password_auth_tag
+      FROM users 
+      WHERE username = ${username}
+    `;
+
+    if (userResult.rows.length === 0) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const { encrypted_password, password_iv, password_auth_tag } = userResult.rows[0];
+    const password = Crypt.decrypt(encrypted_password, password_iv, password_auth_tag);
+
+    const redditClient = RedditClient.getInstance();
+    const client = await redditClient.initializeClient(username, password);
+    const exists = await redditClient.validateSubReddit(client, subreddit);
 
     return NextResponse.json({ exists });
   } catch (error) {
-    console.log(error);
-    return NextResponse.json({ error: error instanceof Error ? error.message : 'Validation failed' }, { status: 500 });
+    console.error(error);
+    return NextResponse.json({ error: 'Validation failed' }, { status: 500 });
   }
 }
