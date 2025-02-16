@@ -5,10 +5,11 @@ import { RedditClient } from '@/lib/reddit';
 export async function POST(request: Request) {
   try {
     const { username, password } = await request.json();
-    const redditClient = new RedditClient();
+    const redditClient = RedditClient.getInstance();
     
     const isValidRedditUser = await redditClient.validateCredentials(username, password);
     if (!isValidRedditUser) {
+      console.log('what')
       return NextResponse.json({ error: 'Invalid Reddit credentials' }, { status: 401 });
     }
 
@@ -21,8 +22,8 @@ export async function POST(request: Request) {
 
     if (userResult.rows.length === 0) {
       const newUser = await sql`
-        INSERT INTO users (username, password)
-        VALUES (${username}, ${password})
+        INSERT INTO users (username)
+        VALUES (${username})
         RETURNING id
       `;
       userId = newUser.rows[0].id;
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
       }
     });
   } catch (error) {
+    console.log(error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Authentication failed' },
       { status: 500 }
