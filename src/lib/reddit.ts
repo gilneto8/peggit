@@ -2,6 +2,8 @@ import { RedditClientInterface } from '@/types/reddit';
 import snoowrap from 'snoowrap';
 
 export class RedditClient implements RedditClientInterface {
+  username: string | undefined;
+  password: string | undefined;
   private static instance: RedditClient;
 
   constructor() {}
@@ -13,25 +15,46 @@ export class RedditClient implements RedditClientInterface {
     return RedditClient.instance;
   }
 
-  async validateCredentials(username: string, password: string): Promise<boolean> {
+  setUserInfo(username: string, password: string) {
+    this.username = username;
+    this.password = password;
+  }
+
+  async validateCredentials(): Promise<boolean> {
     const reddit = new snoowrap({
       userAgent: process.env.REDDIT_USER_AGENT!,
       clientId: process.env.REDDIT_CLIENT_ID!,
       clientSecret: process.env.REDDIT_CLIENT_SECRET!,
-      username: username!,
-      password: password!,
+      username: this.username,
+      password: this.password,
     });
     return reddit
       .getMe()
       .fetch()
       .then((_user: snoowrap.RedditUser) => {
         try {
-          return _user.name.toLowerCase() === username.toLowerCase();
+          return _user.name.toLowerCase() === this.username!.toLowerCase();
         } catch (error) {
           console.error(error);
           return false;
         }
       });
+  }
+
+  async validateSubReddit(subreddit: string): Promise<boolean> {
+    const reddit = new snoowrap({
+      userAgent: process.env.REDDIT_USER_AGENT!,
+      clientId: process.env.REDDIT_CLIENT_ID!,
+      clientSecret: process.env.REDDIT_CLIENT_SECRET!,
+      username: this.username,
+      password: this.password,
+    });
+
+    return await reddit
+      .getSubreddit(subreddit)
+      .fetch()
+      .then(() => true)
+      .catch(() => false);
   }
 
   // async submitPost(subreddit: string title: string, text: string): Promise<string> {

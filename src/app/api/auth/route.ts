@@ -6,10 +6,10 @@ export async function POST(request: Request) {
   try {
     const { username, password } = await request.json();
     const redditClient = RedditClient.getInstance();
+    redditClient.setUserInfo(username, password);
 
-    const isValidRedditUser = await redditClient.validateCredentials(username, password);
+    const isValidRedditUser = await redditClient.validateCredentials();
     if (!isValidRedditUser) {
-      console.log('what');
       return NextResponse.json({ error: 'Invalid Reddit credentials' }, { status: 401 });
     }
 
