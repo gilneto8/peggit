@@ -25,7 +25,7 @@ export async function POST(request: Request) {
       DO UPDATE SET general_context = ${generalContext}
       RETURNING id
     `;
-    
+
     const configId = configResult.rows[0].id;
 
     // Delete existing forums for this config
@@ -44,9 +44,6 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, configId });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to save configuration' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to save configuration' }, { status: 500 });
   }
 }

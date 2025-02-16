@@ -4,7 +4,7 @@ import snoowrap from 'snoowrap';
 export class RedditClient implements RedditClientInterface {
   private static instance: RedditClient;
 
-  constructor() {};
+  constructor() {}
 
   static getInstance(): RedditClient {
     if (!RedditClient.instance) {
@@ -12,24 +12,26 @@ export class RedditClient implements RedditClientInterface {
     }
     return RedditClient.instance;
   }
-  
+
   async validateCredentials(username: string, password: string): Promise<boolean> {
     const reddit = new snoowrap({
       userAgent: process.env.REDDIT_USER_AGENT!,
       clientId: process.env.REDDIT_CLIENT_ID!,
       clientSecret: process.env.REDDIT_CLIENT_SECRET!,
       username: username!,
-      password: password!
+      password: password!,
     });
-    return reddit.getMe().fetch().then((_user: snoowrap.RedditUser) => {
-      try {
-        return _user.name.toLowerCase() === username.toLowerCase();
-      }
-      catch (error) {
-        console.error(error);
-        return false;
-      }
-    });
+    return reddit
+      .getMe()
+      .fetch()
+      .then((_user: snoowrap.RedditUser) => {
+        try {
+          return _user.name.toLowerCase() === username.toLowerCase();
+        } catch (error) {
+          console.error(error);
+          return false;
+        }
+      });
   }
 
   // async submitPost(subreddit: string title: string, text: string): Promise<string> {

@@ -1,4 +1,3 @@
-
 import { RedditUser } from 'snoowrap';
 
 export interface RedditClientInterface {

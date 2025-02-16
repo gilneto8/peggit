@@ -6,10 +6,10 @@ export async function POST(request: Request) {
   try {
     const { username, password } = await request.json();
     const redditClient = RedditClient.getInstance();
-    
+
     const isValidRedditUser = await redditClient.validateCredentials(username, password);
     if (!isValidRedditUser) {
-      console.log('what')
+      console.log('what');
       return NextResponse.json({ error: 'Invalid Reddit credentials' }, { status: 401 });
     }
 
@@ -48,14 +48,11 @@ export async function POST(request: Request) {
       success: true,
       configurations: {
         generalContext: configResult.rows[0]?.general_context || '',
-        forums: forumsResult.rows || []
-      }
+        forums: forumsResult.rows || [],
+      },
     });
   } catch (error) {
-    console.log(error)
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Authentication failed' },
-      { status: 500 }
-    );
+    console.log(error);
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Authentication failed' }, { status: 500 });
   }
 }

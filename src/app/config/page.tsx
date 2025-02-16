@@ -24,15 +24,15 @@ export default function ConfigPage() {
       setIsLoading(true);
       const storedUsername = localStorage.getItem('username');
       const configData = JSON.parse(localStorage.getItem('configData') || '{}');
-      
+
       setUsername(storedUsername || '');
       setGeneralContext(configData.generalContext || '');
       setForums(
         configData.forums?.map((f: StoredForum) => ({
           id: f.id.toString(),
           identifier: f.identifier,
-          specificContext: f.specific_context
-        })) || []
+          specificContext: f.specific_context,
+        })) || [],
       );
       setIsLoading(false);
     };
@@ -57,7 +57,7 @@ export default function ConfigPage() {
         body: JSON.stringify({
           username,
           generalContext,
-          forums
+          forums,
         }),
       });
 
@@ -73,87 +73,88 @@ export default function ConfigPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center">
-        <div className="text-xl">Loading configuration...</div>
+      <div className='min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center'>
+        <div className='text-xl'>Loading configuration...</div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100">
-      <div className="container mx-auto p-6 max-w-4xl">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-xl font-semibold">Welcome, {username}</h1>
+    <div className='min-h-screen bg-gray-900 text-gray-100'>
+      <div className='container mx-auto p-6 max-w-4xl'>
+        <div className='flex justify-between items-center mb-6'>
+          <h1 className='text-xl font-semibold'>Welcome, {username}</h1>
           <button
             onClick={handleLogout}
             disabled={isSaving}
-            className="px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600
-              disabled:opacity-50 disabled:cursor-not-allowed"
+            className='px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600
+              disabled:opacity-50 disabled:cursor-not-allowed'
           >
             Logout
           </button>
         </div>
-        
-        {error && <div className="text-red-500 mb-4">{error}</div>}
 
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-300 mb-1">
-            General Context
-          </label>
+        {error && <div className='text-red-500 mb-4'>{error}</div>}
+
+        <div className='mb-6'>
+          <label className='block text-sm font-medium text-gray-300 mb-1'>General Context</label>
           <textarea
             value={generalContext}
-            onChange={(e) => setGeneralContext(e.target.value)}
+            onChange={e => setGeneralContext(e.target.value)}
             disabled={isSaving}
-            className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md h-32 text-gray-100 
+            className='w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md h-32 text-gray-100 
               focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
-              disabled:opacity-50 disabled:cursor-not-allowed"
-            placeholder="Enter general context here..."
+              disabled:opacity-50 disabled:cursor-not-allowed'
+            placeholder='Enter general context here...'
           />
         </div>
 
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Forums</h2>
+        <div className='mb-6'>
+          <div className='flex justify-between items-center mb-4'>
+            <h2 className='text-xl font-semibold'>Forums</h2>
             <button
-              onClick={() => setForums([...forums, { 
-                id: Math.random().toString(36).substr(2, 9), 
-                identifier: '', 
-                specificContext: '' 
-              }])}
+              onClick={() =>
+                setForums([
+                  ...forums,
+                  {
+                    id: Math.random().toString(36).substr(2, 9),
+                    identifier: '',
+                    specificContext: '',
+                  },
+                ])
+              }
               disabled={isSaving}
-              className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 
+              className='px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 
                 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900
-                disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled:opacity-50 disabled:cursor-not-allowed'
             >
               Add Forum
             </button>
           </div>
 
-          <div className="space-y-4">
+          <div className='space-y-4'>
             {forums.map(forum => (
-              <div key={forum.id} className="p-4 border border-gray-700 rounded-md bg-gray-800">
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+              <div key={forum.id} className='p-4 border border-gray-700 rounded-md bg-gray-800'>
+                <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4'>
                   <input
-                    type="text"
+                    type='text'
                     value={forum.identifier}
                     disabled={isSaving}
-                    onChange={(e) => {
-                      const newForums = forums.map(f => 
-                        f.id === forum.id ? { ...f, identifier: e.target.value } : f
-                      );
+                    onChange={e => {
+                      const newForums = forums.map(f => (f.id === forum.id ? { ...f, identifier: e.target.value } : f));
                       setForums(newForums);
                     }}
-                    placeholder="Forum Identifier"
-                    className="px-3 py-2 bg-gray-700 border border-gray-600 rounded-md flex-1 text-gray-100 
+                    placeholder='Forum Identifier'
+                    className='px-3 py-2 bg-gray-700 border border-gray-600 rounded-md flex-1 text-gray-100 
                       focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
-                      disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled:opacity-50 disabled:cursor-not-allowed'
                   />
                   <button
                     onClick={() => setForums(forums.filter(f => f.id !== forum.id))}
                     disabled={isSaving}
-                    className="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 
+                    className='px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 
                       focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900
-                      disabled:opacity-50 disabled:cursor-not-allowed"
+                      disabled:opacity-50 disabled:cursor-not-allowed'
                   >
                     Remove
                   </button>
@@ -161,16 +162,14 @@ export default function ConfigPage() {
                 <textarea
                   value={forum.specificContext}
                   disabled={isSaving}
-                  onChange={(e) => {
-                    const newForums = forums.map(f => 
-                      f.id === forum.id ? { ...f, specificContext: e.target.value } : f
-                    );
+                  onChange={e => {
+                    const newForums = forums.map(f => (f.id === forum.id ? { ...f, specificContext: e.target.value } : f));
                     setForums(newForums);
                   }}
-                  placeholder="Enter specific context for this forum..."
-                  className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md h-24 text-gray-100 
+                  placeholder='Enter specific context for this forum...'
+                  className='w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md h-24 text-gray-100 
                     focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
-                    disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled:opacity-50 disabled:cursor-not-allowed'
                 />
               </div>
             ))}
@@ -180,9 +179,9 @@ export default function ConfigPage() {
         <button
           onClick={handleSubmit}
           disabled={isSaving}
-          className="px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 
+          className='px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 
             focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900
-            disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled:opacity-50 disabled:cursor-not-allowed'
         >
           {isSaving ? 'Saving...' : 'Save Configuration'}
         </button>

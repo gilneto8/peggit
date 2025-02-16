@@ -1,4 +1,3 @@
-
 export interface Forum {
   id: string;
   identifier: string;
