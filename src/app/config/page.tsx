@@ -9,6 +9,12 @@ interface Forum {
   specificContext: string;
 }
 
+interface StoredForum {
+  id: number;
+  identifier: string;
+  specific_context: string;
+}
+
 export default function ConfigPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
@@ -26,16 +32,19 @@ export default function ConfigPage() {
         return;
       }
 
+      setIsLoading(true);
       const storedUsername = localStorage.getItem('username');
       const configData = JSON.parse(localStorage.getItem('configData') || '{}');
       
       setUsername(storedUsername || '');
       setGeneralContext(configData.generalContext || '');
-      setForums(configData.forums?.map((f: any) => ({
-        id: f.id.toString(),
-        identifier: f.identifier,
-        specificContext: f.specific_context
-      })) || []);
+      setForums(
+        configData.forums?.map((f: StoredForum) => ({
+          id: f.id.toString(),
+          identifier: f.identifier,
+          specificContext: f.specific_context
+        })) || []
+      );
       setIsLoading(false);
     };
 
