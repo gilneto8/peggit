@@ -8,6 +8,13 @@ interface Forum {
   specificContext: string;
 }
 
+interface DbForum {
+  id: number;
+  config_id: number;
+  identifier: string | null;
+  specific_context: string | null;
+}
+
 export default function ForumConfig() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -28,7 +35,7 @@ export default function ForumConfig() {
         setUsername(data.username || '');
         setPassword(data.password || '');
         setGeneralContext(data.general_context || '');
-        setForums(data.forums.map((f: any) => ({
+        setForums(data.forums.map((f: DbForum) => ({
           id: f.id.toString(),
           identifier: f.identifier || '',
           specificContext: f.specific_context || ''
