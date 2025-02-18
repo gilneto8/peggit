@@ -1,40 +1,169 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with
-[`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Peggit: Reddit Configuration Management Platform
 
-## Getting Started
+## 🚀 Project Overview
 
-First, run the development server:
+Peggit
+
+## 🛠 Prerequisites
+
+- Node.js (v18+ recommended)
+- npm or yarn
+- OpenAI API Key (optional, for AI features)
+- Vercel Account (for deployment)
+
+## 🔧 Local Development Setup
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/gilneto8/peggit.git
+cd peggit
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+# or
+yarn install
+```
+
+### 3. Environment Configuration
+
+Create a `.env` file in the project root with the following variables:
+
+```env
+# OpenAI API Key (Optional)
+OPENAI_API_KEY=your_openai_api_key
+
+# Postgres Database Connection (Required)
+POSTGRES_URL=your_postgres_connection_string
+
+# Authentication Secrets
+ENCRYPTION_KEY=your_encryption_key
+```
+
+### 4. Run Development Server
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🌐 Deployment on Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load
-[Geist](https://vercel.com/font), a new font family for Vercel.
+### Automatic Deployment
 
-## Learn More
+1. Fork the repository
+2. Connect your GitHub account to Vercel
+3. Import the project to Vercel
+4. Set environment variables in Vercel project settings
 
-To learn more about Next.js, take a look at the following resources:
+### Manual Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+# Install Vercel CLI
+npm i -g vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Login to Vercel
+vercel login
 
-## Deploy on Vercel
+# Deploy
+vercel
+```
 
-The easiest way to deploy your Next.js app is to use the
-[Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme)
-from the creators of Next.js.
+## 🔑 Key Configuration Components
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### AI Connector
+
+The AI Connector provides a flexible, extensible interface for AI interactions:
+
+```typescript
+import { aiConnector } from '@/lib/ai';
+
+// Basic JSON prompt
+const response = await aiConnector.promptForJSON('Generate configuration insights');
+```
+
+#### Key Features
+
+- Multiple provider support
+- Consistent JSON response format
+- Configurable AI parameters
+- Built-in response validation
+
+### Authentication Flow
+
+Implemented using NextAuth with custom providers:
+
+```typescript
+// src/app/api/auth/route.ts
+export const { GET, POST } = AuthRoutes({
+  providers: [
+    RedditProvider({ ... }),
+    CredentialsProvider({ ... })
+  ]
+});
+```
+
+## 📦 Project Structure
+
+```
+peggit/
+├── src/
+│   ├── app/             # Next.js app router
+│   ├── components/      # React components
+│   ├── lib/             # Utility libraries
+│   │   └── ai/          # AI interaction modules
+│   ├── types/           # TypeScript type definitions
+│   └── styles/          # Global styles
+├── prisma/              # Database schema
+└── tailwind.config.ts   # Tailwind CSS configuration
+```
+
+## 🧪 Testing
+
+```bash
+# Run tests
+npm test
+# or
+yarn test
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## 📝 License
+
+[MIT License](LICENSE)
+
+## 🛡️ Security
+
+- Never commit sensitive information
+- Use environment variables
+- Regularly update dependencies
+
+## 💡 Troubleshooting
+
+- Ensure all environment variables are set
+- Check Node.js and npm versions
+- Verify database connection
+- Clear browser cache if experiencing issues
+
+## 🚨 Known Limitations
+
+- Requires active OpenAI API subscription for AI features
+- Limited to Reddit API constraints
+- Performance may vary based on configuration complexity
+
+## 📞 Support
+
+For issues or questions, please [open an issue](https://github.com/yourusername/peggit/issues) on GitHub.
