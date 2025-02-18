@@ -1,6 +1,7 @@
 import { AuthResponse } from '@/types/auth';
 import { Forum, StoredForum } from '@/types/config';
 import { useState } from 'react';
+import Cookies from 'js-cookie';
 
 const ConfigComponent = ({
   username,
@@ -42,6 +43,12 @@ const ConfigComponent = ({
     return validationResults.every(forum => forum.isValid);
   };
 
+  const handleLogout = () => {
+    Cookies.remove('isLoggedIn', { path: '/' });
+    localStorage.clear();
+    onLogout();
+  };
+
   const handleSubmit = async () => {
     if (isSaving) return;
     setIsSaving(true);
@@ -81,7 +88,7 @@ const ConfigComponent = ({
       <div className='flex justify-between items-center mb-6'>
         <h1 className='text-xl font-semibold'>Welcome, {username}</h1>
         <button
-          onClick={onLogout}
+          onClick={handleLogout}
           disabled={isSaving}
           className='px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600
             disabled:opacity-50 disabled:cursor-not-allowed'

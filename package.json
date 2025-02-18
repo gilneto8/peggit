@@ -11,9 +11,11 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
+    "@types/js-cookie": "^3.0.6",
     "@types/snoowrap": "^1.19.0",
     "@vercel/postgres": "^0.10.0",
     "crypto": "^1.0.1",
+    "js-cookie": "^3.0.5",
     "next": "15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

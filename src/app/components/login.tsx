@@ -1,7 +1,10 @@
 import { AuthResponse } from '@/types/auth';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Cookies from 'js-cookie';
 
-const LoginComponent = ({ onLogin }: { onLogin: (data: AuthResponse) => void }) => {
+const LoginComponent = () => {
+  const router = useRouter();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -21,10 +24,13 @@ const LoginComponent = ({ onLogin }: { onLogin: (data: AuthResponse) => void }) 
 
       if (!response.ok) throw new Error('Authentication failed');
       const data: AuthResponse = await response.json();
+
+      // Set both cookie and localStorage
+      Cookies.set('isLoggedIn', 'true', { path: '/' });
       localStorage.setItem('username', username);
-      localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('configData', JSON.stringify(data.configurations));
-      onLogin(data);
+
+      router.push('/dashboard');
     } catch (err) {
       console.error(err);
       setError('Login failed. Please check your credentials.');
