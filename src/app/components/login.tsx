@@ -2,6 +2,7 @@ import { AuthResponse } from '@/types/auth';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
 
 const LoginComponent = () => {
   const router = useRouter();
@@ -30,9 +31,11 @@ const LoginComponent = () => {
       localStorage.setItem('username', username);
       localStorage.setItem('configData', JSON.stringify(data.configurations));
 
+      toast.success(`Welcome back, ${username}!`);
       router.push('/dashboard');
     } catch (err) {
       console.error(err);
+      toast.error('Login failed. Please check your credentials.');
       setError('Login failed. Please check your credentials.');
     } finally {
       setIsLoading(false);
@@ -52,7 +55,7 @@ const LoginComponent = () => {
             disabled={isLoading}
             onChange={e => setUsername(e.target.value)}
             className='w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 
-              focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
               disabled:opacity-50 disabled:cursor-not-allowed'
           />
         </div>
@@ -64,7 +67,7 @@ const LoginComponent = () => {
             disabled={isLoading}
             onChange={e => setPassword(e.target.value)}
             className='w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md text-gray-100 
-              focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
               disabled:opacity-50 disabled:cursor-not-allowed'
           />
         </div>
@@ -72,7 +75,7 @@ const LoginComponent = () => {
           onClick={handleLogin}
           disabled={isLoading}
           className='w-full px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 
-            focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900
             disabled:opacity-50 disabled:cursor-not-allowed'
         >
           {isLoading ? 'Logging in...' : 'Login'}

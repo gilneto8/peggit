@@ -3,6 +3,8 @@ export interface Forum {
   identifier: string;
   specificContext: string;
   isValid?: boolean;
+  validationError?: string | null;
+  isValidating?: boolean;
 }
 
 export interface StoredForum {

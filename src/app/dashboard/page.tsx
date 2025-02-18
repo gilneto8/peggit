@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { AuthResponse } from '@/types/auth';
 import ConfigComponent from '../components/config';
 import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
 
 const DashboardPage = () => {
   const router = useRouter();
@@ -35,6 +36,7 @@ const DashboardPage = () => {
   const handleLogout = () => {
     Cookies.remove('isLoggedIn', { path: '/' });
     localStorage.clear();
+    toast.success('Logged out successfully');
     router.push('/');
   };
 

@@ -1,7 +1,9 @@
 import { AuthResponse } from '@/types/auth';
 import { Forum, StoredForum } from '@/types/config';
-import { useState } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useDebounce } from '@uidotdev/usehooks';
 import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
 
 const ConfigComponent = ({
   username,
@@ -19,28 +21,68 @@ const ConfigComponent = ({
       id: f.id.toString(),
       identifier: f.identifier,
       specificContext: f.specific_context,
+      isValid: undefined,
+      isValidating: false,
     })) || [],
   );
   const [error, setError] = useState<string | null>(null);
+  const [pendingValidation, setPendingValidation] = useState<{ id: string; value: string } | null>(null);
 
-  const validateSubreddits = async () => {
-    const validationResults = await Promise.all(
-      forums.map(async forum => {
-        if (!forum.identifier) return { ...forum, isValid: false };
+  const validateSubreddit = useCallback(
+    async (forumId: string, identifier: string) => {
+      if (!identifier) return false;
 
-        try {
-          const response = await fetch(`/api/validate-subreddit?name=${forum.identifier}&username=${username}`);
-          const { exists } = await response.json();
-          return { ...forum, isValid: exists };
-        } catch (error) {
-          console.error(error);
-          return { ...forum, isValid: false };
-        }
-      }),
-    );
+      // Set validating state
+      setForums(currentForums => currentForums.map(f => (f.id === forumId ? { ...f, isValidating: true } : f)));
 
-    setForums(validationResults);
-    return validationResults.every(forum => forum.isValid);
+      try {
+        const response = await fetch(`/api/validate-subreddit?name=${identifier}&username=${username}`);
+        const { exists } = await response.json();
+        setForums(currentForums =>
+          currentForums.map(f =>
+            f.id === forumId
+              ? {
+                  ...f,
+                  isValid: exists,
+                  validationError: exists ? null : 'Invalid subreddit',
+                  isValidating: false,
+                }
+              : f,
+          ),
+        );
+        return exists;
+      } catch (error) {
+        console.error(error);
+        setForums(currentForums =>
+          currentForums.map(f =>
+            f.id === forumId
+              ? {
+                  ...f,
+                  isValid: false,
+                  validationError: 'Validation failed',
+                  isValidating: false,
+                }
+              : f,
+          ),
+        );
+        return false;
+      }
+    },
+    [username],
+  );
+
+  const debouncedIdentifier = useDebounce(pendingValidation, 500);
+
+  // Effect to trigger validation when debounced value changes
+  useEffect(() => {
+    if (debouncedIdentifier) {
+      validateSubreddit(debouncedIdentifier.id, debouncedIdentifier.value);
+    }
+  }, [debouncedIdentifier, validateSubreddit]);
+
+  const validateAllSubreddits = async () => {
+    const results = await Promise.all(forums.map(forum => validateSubreddit(forum.id, forum.identifier)));
+    return results.every(Boolean);
   };
 
   const handleLogout = () => {
@@ -55,10 +97,9 @@ const ConfigComponent = ({
     setError(null);
 
     try {
-      const isValid = true;
-      await validateSubreddits();
+      const isValid = await validateAllSubreddits();
       if (!isValid) {
-        setError('One or more subreddits are invalid. Please check and try again.');
+        toast.error('One or more subreddits are invalid. Please check and try again.');
         setIsSaving(false);
         return;
       }
@@ -74,10 +115,11 @@ const ConfigComponent = ({
       });
 
       if (!response.ok) throw new Error('Failed to save configuration');
+      toast.success('Configuration saved successfully!');
       setError(null);
     } catch (err) {
       console.error(err);
-      setError('Failed to save configuration. Please try again.');
+      toast.error('Failed to save configuration. Please try again.');
     } finally {
       setIsSaving(false);
     }
@@ -97,17 +139,16 @@ const ConfigComponent = ({
         </button>
       </div>
 
-      {error && <div className='text-red-500 mb-4'>{error}</div>}
-
       <div className='mb-6'>
         <label className='block text-sm font-medium text-gray-300 mb-1'>General Context</label>
         <textarea
           value={generalContext}
           onChange={e => setGeneralContext(e.target.value)}
           disabled={isSaving}
-          className='w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-md h-32 text-gray-100 
-            focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
-            disabled:opacity-50 disabled:cursor-not-allowed'
+          className={`w-full px-3 py-2 bg-gray-700 border-2 rounded-md h-32 text-gray-100 
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+            disabled:opacity-50 disabled:cursor-not-allowed
+            ${!generalContext.trim() ? 'border-red-500' : 'border-gray-600'}`}
           placeholder='Enter general context here...'
         />
       </div>
@@ -123,12 +164,14 @@ const ConfigComponent = ({
                   id: Math.random().toString(36).substr(2, 9),
                   identifier: '',
                   specificContext: '',
+                  isValid: undefined,
+                  isValidating: false,
                 },
               ])
             }
             disabled={isSaving}
             className='px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 
-              focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900
+              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900
               disabled:opacity-50 disabled:cursor-not-allowed'
           >
             Add Forum
@@ -145,30 +188,35 @@ const ConfigComponent = ({
                     value={forum.identifier}
                     disabled={isSaving}
                     onChange={e => {
-                      const newForums = forums.map(f => (f.id === forum.id ? { ...f, identifier: e.target.value, isValid: undefined } : f));
-                      setForums(newForums);
+                      const newValue = e.target.value;
+                      setForums(currentForums =>
+                        currentForums.map(f =>
+                          f.id === forum.id ? { ...f, identifier: newValue, isValid: undefined, validationError: null } : f,
+                        ),
+                      );
+                      setPendingValidation({ id: forum.id, value: newValue });
                     }}
                     placeholder='Subreddit name'
-                    className={`px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 w-full
-                      focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
-                      disabled:opacity-50 disabled:cursor-not-allowed
-                      ${
-                        forum.isValid === false
-                          ? 'border-red-500 bg-red-900/20'
-                          : forum.isValid
-                            ? 'border-green-500 bg-green-900/20'
-                            : 'border-gray-600'
-                      }`}
+                    className={`px-3 py-2 pr-10 bg-gray-700 border-2 rounded-md text-gray-100 w-full 
+                      ${forum.isValidating ? 'border-yellow-500' : forum.isValid === false ? 'border-red-500' : 'border-gray-600'}
+                      focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                      disabled:opacity-50 disabled:cursor-not-allowed`}
                   />
-                  {forum.isValid === false && (
-                    <span className='absolute right-3 top-1/2 -translate-y-1/2 text-red-500'>Invalid subreddit</span>
-                  )}
+                  <div className='absolute right-3 top-1/2 -translate-y-1/2'>
+                    {forum.isValidating ? (
+                      <span className='bg-yellow-500 text-white font-bold text-[10px] px-2 py-1 rounded'>Validating</span>
+                    ) : forum.isValid === false ? (
+                      <span className='bg-red-500 text-white font-bold text-[10px] px-2 py-1 rounded'>Invalid</span>
+                    ) : forum.isValid ? (
+                      <span className='bg-green-500 text-white font-bold text-[10px] px-2 py-1 rounded'>Valid</span>
+                    ) : null}
+                  </div>
                 </div>
                 <button
                   onClick={() => setForums(forums.filter(f => f.id !== forum.id))}
                   disabled={isSaving}
                   className='px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 
-                    focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900
+                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900
                     disabled:opacity-50 disabled:cursor-not-allowed'
                 >
                   Remove
@@ -177,29 +225,45 @@ const ConfigComponent = ({
               <textarea
                 value={forum.specificContext}
                 disabled={isSaving}
+                className={`w-full px-3 py-2 bg-gray-700 border-2 rounded-md h-32 text-gray-100 
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                  disabled:opacity-50 disabled:cursor-not-allowed
+                  ${forum.isValid === false ? 'border-red-500' : 'border-gray-600'}`}
+                placeholder='Enter specific context for this subreddit...'
                 onChange={e => {
                   const newForums = forums.map(f => (f.id === forum.id ? { ...f, specificContext: e.target.value } : f));
                   setForums(newForums);
                 }}
-                placeholder='Enter specific context for this forum...'
-                className='w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded-md h-24 text-gray-100 
-                  focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent
-                  disabled:opacity-50 disabled:cursor-not-allowed'
               />
             </div>
           ))}
         </div>
-      </div>
 
-      <button
-        onClick={handleSubmit}
-        disabled={isSaving}
-        className='px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 
-          focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-900
-          disabled:opacity-50 disabled:cursor-not-allowed'
-      >
-        {isSaving ? 'Saving...' : 'Save Configuration'}
-      </button>
+        {error && <p className='text-red-500 mt-4'>{error}</p>}
+
+        <div className='mt-6'>
+          <button
+            onClick={handleSubmit}
+            disabled={
+              isSaving ||
+              forums.some(forum => forum.isValidating || forum.isValid === false) ||
+              forums.length === 0 ||
+              !generalContext.trim()
+            }
+            className={`w-full px-4 py-3 rounded-md text-lg font-semibold transition-colors duration-300 
+              ${
+                isSaving ||
+                forums.some(forum => forum.isValidating || forum.isValid === false) ||
+                forums.length === 0 ||
+                !generalContext.trim()
+                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  : 'bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500'
+              }`}
+          >
+            {isSaving ? 'Saving...' : 'Save Configuration'}
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
