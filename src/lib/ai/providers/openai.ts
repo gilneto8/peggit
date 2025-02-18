@@ -3,8 +3,7 @@ import {
   BaseAIProvider, 
   AIPromptConfig, 
   AIResponse, 
-  AIProviderOptions,
-  AIProviderContext
+  AIProviderOptions
 } from '../interfaces';
 
 export class OpenAIProvider extends BaseAIProvider {
@@ -18,19 +17,17 @@ export class OpenAIProvider extends BaseAIProvider {
   async promptForJSON(
     prompt: string, 
     config: AIPromptConfig = {},
-    context?: AIProviderContext
+    context?: { 
+      systemPrompt?: string, 
+      previousMessages?: Array<{role: 'user' | 'assistant', content: string}>
+    }
   ): Promise<AIResponse> {
     try {
-      // Default configuration
-      const defaultConfig = {
-        model: 'gpt-3.5-turbo-1106',
-        temperature: 0.7,
-        maxTokens: 1000,
-        responseFormat: 'json_object' as const
+      // Merge base config with provided config
+      const finalConfig = { 
+        ...this.config, 
+        ...config 
       };
-
-      // Merge default and provided configs
-      const finalConfig = { ...defaultConfig, ...config };
 
       // Prepare messages with roles
       const messages: Array<{role: 'system' | 'user' | 'assistant', content: string}> = [
@@ -51,14 +48,19 @@ export class OpenAIProvider extends BaseAIProvider {
         content: prompt
       });
 
-      // Make the API call
-      const response = await this.openai.chat.completions.create({
-        model: finalConfig.model,
-        temperature: finalConfig.temperature,
-        max_tokens: finalConfig.maxTokens,
-        response_format: { type: finalConfig.responseFormat },
+      // Explicitly type the API call parameters
+      const apiParams: OpenAI.Chat.ChatCompletionCreateParams = {
+        model: finalConfig.model || 'gpt-3.5-turbo-1106',
+        temperature: finalConfig.temperature ?? 0.6,
+        max_tokens: finalConfig.maxTokens ?? 1000,
+        response_format: { 
+          type: (finalConfig.responseFormat as 'json_object' | 'text') || 'json_object' 
+        },
         messages: messages
-      });
+      };
+
+      // Make the API call
+      const response = await this.openai.chat.completions.create(apiParams);
 
       // Extract and parse the JSON response
       const jsonResponse = response.choices[0].message.content;
