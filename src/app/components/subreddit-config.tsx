@@ -4,7 +4,9 @@ import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useDebounce } from '@uidotdev/usehooks';
 import toast from 'react-hot-toast';
 
-const ConfigComponent = ({ username, initialData }: { username: string; initialData: AuthResponse['configurations'] }) => {
+type SubredditConfigProps = { username: string; initialData: AuthResponse['configurations'] };
+
+const SubredditConfigComponent: React.FC<SubredditConfigProps> = ({ username, initialData }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [generalContext, setGeneralContext] = useState(initialData.generalContext || '');
   const initialForums = useMemo(
@@ -150,8 +152,8 @@ const ConfigComponent = ({ username, initialData }: { username: string; initialD
           value={generalContext}
           onChange={e => setGeneralContext(e.target.value)}
           disabled={isSaving}
-          className={`w-full px-3 py-2 bg-gray-700 border-2 rounded-md h-32 text-gray-100 
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+          className={`w-full min-h-[80px] max-h-[200px] px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent overflow-auto
             disabled:opacity-50 disabled:cursor-not-allowed
             ${!generalContext.trim() ? 'border-red-500' : 'border-gray-600'}`}
           placeholder='Enter general context here...'
@@ -232,8 +234,8 @@ const ConfigComponent = ({ username, initialData }: { username: string; initialD
               <textarea
                 value={forum.specificContext}
                 disabled={isSaving}
-                className={`w-full px-3 py-2 bg-gray-700 border-2 rounded-md h-32 text-gray-100 
-                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                className={`w-full min-h-[80px] max-h-[200px] px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
+                  focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent overflow-auto
                   disabled:opacity-50 disabled:cursor-not-allowed
                   ${forum.isValid === false ? 'border-red-500' : 'border-gray-600'}`}
                 placeholder='Enter specific context for this subreddit...'
@@ -267,4 +269,4 @@ const ConfigComponent = ({ username, initialData }: { username: string; initialD
   );
 };
 
-export default ConfigComponent;
+export default SubredditConfigComponent;

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthResponse } from '@/types/auth';
-import ConfigComponent from '../components/subreddit-config';
+import SubredditConfigComponent from '../components/subreddit-config';
 import TimeConfigComponent from '../components/time-config';
 import Cookies from 'js-cookie';
 
@@ -44,11 +44,9 @@ const ConfigurationPage = () => {
   return (
     <div className='min-h-screen bg-gray-900 text-gray-100'>
       <div className='max-w-[1400px] mx-auto px-6 py-4'>
-        <div className='grid grid-cols-[70%_30%] gap-4'>
-          <div className='pr-2'>{configData && <ConfigComponent username={username} initialData={configData} />}</div>
-          <div className='pl-2'>
-            <TimeConfigComponent />
-          </div>
+        <div className='grid grid-cols-[70%_30%] gap-4 pt-16'>
+          <div className='pr-2'>{configData && <SubredditConfigComponent username={username} initialData={configData} />}</div>
+          <div className='pl-2'>{configData && <TimeConfigComponent username={username} initialData={configData} />}</div>
         </div>
       </div>
     </div>

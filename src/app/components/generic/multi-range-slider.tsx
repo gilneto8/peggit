@@ -39,10 +39,7 @@ const MultiRangeSlider: React.FC<MultiRangeSliderProps> = ({
   const maxInputRef = useRef<HTMLInputElement>(null);
 
   // Convert to percentage
-  const getPercent = useCallback(
-    (value: number) => Math.round(((value - min) / (max - min)) * 100),
-    [min, max]
-  );
+  const getPercent = useCallback((value: number) => Math.round(((value - min) / (max - min)) * 100), [min, max]);
 
   // Set width of the range to decrease from the left side
   useEffect(() => {
@@ -75,27 +72,20 @@ const MultiRangeSlider: React.FC<MultiRangeSliderProps> = ({
       setMinVal(minValue);
       minValRef.current = minValue;
     }
-  }, [minValue]);
+  }, [minVal, minValue]);
 
   useEffect(() => {
     if (maxValue !== maxVal) {
       setMaxVal(maxValue);
       maxValRef.current = maxValue;
     }
-  }, [maxValue]);
+  }, [maxVal, maxValue]);
 
   return (
     <div className='relative'>
-      {label && (
-        <label className='block text-sm font-medium text-gray-300 mb-2'>
-          {label}
-        </label>
-      )}
+      {label && <label className='block text-sm font-medium text-gray-300 mb-2'>{label}</label>}
       <div className='relative h-2 rounded-md bg-gray-700'>
-        <div
-          ref={range}
-          className='absolute h-full bg-blue-500 rounded-md'
-        />
+        <div ref={range} className='absolute h-full bg-blue-500 rounded-md' />
       </div>
       <div className='relative'>
         <input
@@ -107,7 +97,7 @@ const MultiRangeSlider: React.FC<MultiRangeSliderProps> = ({
           step={step}
           onMouseUp={handleDragEnd}
           onTouchEnd={handleDragEnd}
-          onChange={(event) => {
+          onChange={event => {
             const value = Math.min(Number(event.target.value), maxVal - step);
             setMinVal(value);
             minValRef.current = value;
@@ -123,7 +113,7 @@ const MultiRangeSlider: React.FC<MultiRangeSliderProps> = ({
           step={step}
           onMouseUp={handleDragEnd}
           onTouchEnd={handleDragEnd}
-          onChange={(event) => {
+          onChange={event => {
             const value = Math.max(Number(event.target.value), minVal + step);
             setMaxVal(value);
             maxValRef.current = value;

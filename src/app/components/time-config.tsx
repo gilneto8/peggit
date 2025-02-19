@@ -2,10 +2,9 @@
 
 import React, { useState, useCallback } from 'react';
 import MultiRangeSlider from './generic/multi-range-slider';
+import { AuthResponse } from '@/types/auth';
 
-interface TimeConfigProps {
-  // Add any props you might need in the future
-}
+type TimeConfigProps = { username: string; initialData: AuthResponse['configurations'] };
 
 const TimeConfigComponent: React.FC<TimeConfigProps> = () => {
   const [rangeValues, setRangeValues] = useState({ min: 2, max: 4 });
