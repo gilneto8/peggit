@@ -7,8 +7,10 @@ import toast from 'react-hot-toast';
 const ConfigComponent = ({ username, initialData }: { username: string; initialData: AuthResponse['configurations'] }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [generalContext, setGeneralContext] = useState(initialData.generalContext || '');
-  // Keep track of initial forum data for comparison
-  const initialForums = new Map(initialData.forums?.map(f => [f.id.toString(), f.specific_context || '']) || []);
+  const initialForums = useMemo(
+    () => new Map(initialData.forums?.map(f => [f.id.toString(), f.specific_context || '']) || []),
+    [initialData],
+  );
   const [forums, setForums] = useState<Forum[]>(
     initialData.forums?.map((f: StoredForum) => ({
       id: f.id.toString(),
@@ -137,7 +139,7 @@ const ConfigComponent = ({ username, initialData }: { username: string; initialD
           return hasContextChanged;
         }))
     );
-  }, [isSaving, forums, generalContext, initialData]);
+  }, [isSaving, forums, generalContext, initialData, initialForums]);
 
   return (
     <div className='container mx-auto p-6 max-w-4xl'>

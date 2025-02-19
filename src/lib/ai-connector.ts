@@ -9,7 +9,7 @@ export interface AIPromptConfig {
 }
 
 export interface AIResponse {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface AIProviderOptions {
@@ -22,7 +22,7 @@ export abstract class BaseAIProvider {
 
   constructor(options: AIProviderOptions = {}) {
     this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || '';
-    
+
     if (!this.apiKey) {
       throw new Error('API key is required. Set it via constructor or environment variable.');
     }
@@ -30,19 +30,16 @@ export abstract class BaseAIProvider {
 
   // Abstract method to be implemented by specific providers
   abstract promptForJSON(
-    prompt: string, 
+    prompt: string,
     config?: AIPromptConfig,
-    context?: { 
-      systemPrompt?: string, 
-      previousMessages?: Array<{role: 'user' | 'assistant', content: string}>
-    }
+    context?: {
+      systemPrompt?: string;
+      previousMessages?: Array<{ role: 'user' | 'assistant'; content: string }>;
+    },
   ): Promise<AIResponse>;
 
   // Utility method for response validation
-  validateResponse(
-    response: AIResponse, 
-    expectedKeys?: string[]
-  ): boolean {
+  validateResponse(response: AIResponse, expectedKeys?: string[]): boolean {
     if (!response || typeof response !== 'object') {
       return false;
     }
@@ -65,12 +62,12 @@ export class OpenAIProvider extends BaseAIProvider {
   }
 
   async promptForJSON(
-    prompt: string, 
+    prompt: string,
     config: AIPromptConfig = {},
-    context?: { 
-      systemPrompt?: string, 
-      previousMessages?: Array<{role: 'user' | 'assistant', content: string}>
-    }
+    context?: {
+      systemPrompt?: string;
+      previousMessages?: Array<{ role: 'user' | 'assistant'; content: string }>;
+    },
   ): Promise<AIResponse> {
     try {
       // Default configuration
@@ -78,18 +75,18 @@ export class OpenAIProvider extends BaseAIProvider {
         model: 'gpt-3.5-turbo-1106',
         temperature: 0.7,
         maxTokens: 1000,
-        responseFormat: 'json_object' as const
+        responseFormat: 'json_object' as const,
       };
 
       // Merge default and provided configs
       const finalConfig = { ...defaultConfig, ...config };
 
       // Prepare messages with roles
-      const messages: Array<{role: 'system' | 'user' | 'assistant', content: string}> = [
+      const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
         {
-          role: 'system', 
-          content: context?.systemPrompt || 'You are a helpful assistant that always responds in valid JSON format.'
-        }
+          role: 'system',
+          content: context?.systemPrompt || 'You are a helpful assistant that always responds in valid JSON format.',
+        },
       ];
 
       // Add any previous conversation context
@@ -99,8 +96,8 @@ export class OpenAIProvider extends BaseAIProvider {
 
       // Add current user prompt
       messages.push({
-        role: 'user', 
-        content: prompt
+        role: 'user',
+        content: prompt,
       });
 
       // Make the API call
@@ -109,12 +106,12 @@ export class OpenAIProvider extends BaseAIProvider {
         temperature: finalConfig.temperature,
         max_tokens: finalConfig.maxTokens,
         response_format: { type: finalConfig.responseFormat },
-        messages: messages
+        messages: messages,
       });
 
       // Extract and parse the JSON response
       const jsonResponse = response.choices[0].message.content;
-      
+
       if (!jsonResponse) {
         throw new Error('No response received from AI');
       }
@@ -131,11 +128,8 @@ export class OpenAIProvider extends BaseAIProvider {
 export class AIConnector {
   private provider: BaseAIProvider;
 
-  constructor(
-    providerType: 'openai' = 'openai', 
-    options: AIProviderOptions = {}
-  ) {
-    switch(providerType) {
+  constructor(providerType: 'openai' = 'openai', options: AIProviderOptions = {}) {
+    switch (providerType) {
       case 'openai':
       default:
         this.provider = new OpenAIProvider(options);
@@ -144,21 +138,18 @@ export class AIConnector {
 
   // Delegate methods to current provider
   async promptForJSON(
-    prompt: string, 
+    prompt: string,
     config?: AIPromptConfig,
-    context?: { 
-      systemPrompt?: string, 
-      previousMessages?: Array<{role: 'user' | 'assistant', content: string}>
-    }
+    context?: {
+      systemPrompt?: string;
+      previousMessages?: Array<{ role: 'user' | 'assistant'; content: string }>;
+    },
   ): Promise<AIResponse> {
     return this.provider.promptForJSON(prompt, config, context);
   }
 
   // Expose response validation
-  validateResponse(
-    response: AIResponse, 
-    expectedKeys?: string[]
-  ): boolean {
+  validateResponse(response: AIResponse, expectedKeys?: string[]): boolean {
     return this.provider.validateResponse(response, expectedKeys);
   }
 }

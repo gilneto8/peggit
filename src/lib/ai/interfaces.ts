@@ -1,7 +1,3 @@
-import { getProviderConfig } from '@/config/ai';
-
-// Shared Interfaces for AI Providers
-
 export interface AIPromptConfig {
   model?: string;
   temperature?: number;
@@ -10,7 +6,7 @@ export interface AIPromptConfig {
 }
 
 export interface AIResponse {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface AIProviderOptions {
@@ -25,7 +21,7 @@ export abstract class BaseAIProvider {
   constructor(options: AIProviderOptions = {}) {
     // Use environment variable, passed key, or throw error
     this.apiKey = options.apiKey || process.env.OPENAI_API_KEY || '';
-    
+
     if (!this.apiKey) {
       throw new Error('API key is required. Set it via constructor or environment variable.');
     }
@@ -36,25 +32,22 @@ export abstract class BaseAIProvider {
       temperature: 0.6,
       maxTokens: 1000,
       responseFormat: 'json_object',
-      ...options.config
+      ...options.config,
     };
   }
 
   // Abstract method to be implemented by specific providers
   abstract promptForJSON(
-    prompt: string, 
+    prompt: string,
     config?: AIPromptConfig,
-    context?: { 
-      systemPrompt?: string, 
-      previousMessages?: Array<{role: 'user' | 'assistant', content: string}>
-    }
+    context?: {
+      systemPrompt?: string;
+      previousMessages?: Array<{ role: 'user' | 'assistant'; content: string }>;
+    },
   ): Promise<AIResponse>;
 
   // Utility method for response validation
-  validateResponse(
-    response: AIResponse, 
-    expectedKeys?: string[]
-  ): boolean {
+  validateResponse(response: AIResponse, expectedKeys?: string[]): boolean {
     if (!response || typeof response !== 'object') {
       return false;
     }
@@ -68,43 +61,56 @@ export abstract class BaseAIProvider {
 }
 
 export class AIConnector {
-  private provider: BaseAIProvider;
+  private provider!: BaseAIProvider;
+  private providerInitialized: boolean = false;
+  private initializationPromise: Promise<void>;
 
-  constructor(
-    providerType: string = 'openai', 
-    options: AIProviderOptions = {}
-  ) {
-    // Dynamic provider loading
-    switch(providerType.toLowerCase()) {
-      case 'openai':
-      default:
-        const { OpenAIProvider } = require('./providers/openai');
-        this.provider = new OpenAIProvider(options);
-        break;
-      case 'anthropic':
-        const { AnthropicProvider } = require('./providers/anthropic');
-        this.provider = new AnthropicProvider(options);
-        break;
+  constructor(providerType: string = 'openai', options: AIProviderOptions = {}) {
+    this.initializationPromise = this.initializeProvider(providerType, options);
+  }
+
+  private async initializeProvider(providerType: string, options: AIProviderOptions): Promise<void> {
+    try {
+      switch (providerType.toLowerCase()) {
+        case 'openai':
+        default:
+          const { OpenAIProvider } = await import('./providers/openai');
+          this.provider = new OpenAIProvider(options);
+          break;
+        case 'anthropic':
+          const { AnthropicProvider } = await import('./providers/anthropic');
+          this.provider = new AnthropicProvider(options);
+          break;
+      }
+      this.providerInitialized = true;
+    } catch (error) {
+      console.error('Failed to initialize AI provider:', error);
+      throw error;
     }
   }
 
   // Delegate methods to current provider
   async promptForJSON(
-    prompt: string, 
+    prompt: string,
     config?: AIPromptConfig,
-    context?: { 
-      systemPrompt?: string, 
-      previousMessages?: Array<{role: 'user' | 'assistant', content: string}>
-    }
+    context?: {
+      systemPrompt?: string;
+      previousMessages?: Array<{ role: 'user' | 'assistant'; content: string }>;
+    },
   ): Promise<AIResponse> {
+    await this.initializationPromise;
+    if (!this.providerInitialized) {
+      throw new Error('AI provider not initialized');
+    }
     return this.provider.promptForJSON(prompt, config, context);
   }
 
   // Expose response validation
-  validateResponse(
-    response: AIResponse, 
-    expectedKeys?: string[]
-  ): boolean {
+  async validateResponse(response: AIResponse, expectedKeys?: string[]): Promise<boolean> {
+    await this.initializationPromise;
+    if (!this.providerInitialized) {
+      throw new Error('AI provider not initialized');
+    }
     return this.provider.validateResponse(response, expectedKeys);
   }
 }

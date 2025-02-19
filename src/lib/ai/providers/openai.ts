@@ -1,10 +1,5 @@
 import OpenAI from 'openai';
-import { 
-  BaseAIProvider, 
-  AIPromptConfig, 
-  AIResponse, 
-  AIProviderOptions
-} from '../interfaces';
+import { BaseAIProvider, AIPromptConfig, AIResponse, AIProviderOptions } from '../interfaces';
 
 export class OpenAIProvider extends BaseAIProvider {
   private openai: OpenAI;
@@ -15,26 +10,26 @@ export class OpenAIProvider extends BaseAIProvider {
   }
 
   async promptForJSON(
-    prompt: string, 
+    prompt: string,
     config: AIPromptConfig = {},
-    context?: { 
-      systemPrompt?: string, 
-      previousMessages?: Array<{role: 'user' | 'assistant', content: string}>
-    }
+    context?: {
+      systemPrompt?: string;
+      previousMessages?: Array<{ role: 'user' | 'assistant'; content: string }>;
+    },
   ): Promise<AIResponse> {
     try {
       // Merge base config with provided config
-      const finalConfig = { 
-        ...this.config, 
-        ...config 
+      const finalConfig = {
+        ...this.config,
+        ...config,
       };
 
       // Prepare messages with roles
-      const messages: Array<{role: 'system' | 'user' | 'assistant', content: string}> = [
+      const messages: Array<{ role: 'system' | 'user' | 'assistant'; content: string }> = [
         {
-          role: 'system', 
-          content: context?.systemPrompt || 'You are a helpful assistant that always responds in valid JSON format.'
-        }
+          role: 'system',
+          content: context?.systemPrompt || 'You are a helpful assistant that always responds in valid JSON format.',
+        },
       ];
 
       // Add any previous conversation context
@@ -44,8 +39,8 @@ export class OpenAIProvider extends BaseAIProvider {
 
       // Add current user prompt
       messages.push({
-        role: 'user', 
-        content: prompt
+        role: 'user',
+        content: prompt,
       });
 
       // Explicitly type the API call parameters
@@ -53,10 +48,10 @@ export class OpenAIProvider extends BaseAIProvider {
         model: finalConfig.model || 'gpt-3.5-turbo-1106',
         temperature: finalConfig.temperature ?? 0.6,
         max_tokens: finalConfig.maxTokens ?? 1000,
-        response_format: { 
-          type: (finalConfig.responseFormat as 'json_object' | 'text') || 'json_object' 
+        response_format: {
+          type: (finalConfig.responseFormat as 'json_object' | 'text') || 'json_object',
         },
-        messages: messages
+        messages: messages,
       };
 
       // Make the API call
@@ -64,7 +59,7 @@ export class OpenAIProvider extends BaseAIProvider {
 
       // Extract and parse the JSON response
       const jsonResponse = response.choices[0].message.content;
-      
+
       if (!jsonResponse) {
         throw new Error('No response received from AI');
       }

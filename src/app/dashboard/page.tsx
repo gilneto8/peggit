@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { AuthResponse } from '@/types/auth';
 import ConfigComponent from '../components/config';
 import Cookies from 'js-cookie';
-import toast from 'react-hot-toast';
 
 const DashboardPage = () => {
   const router = useRouter();

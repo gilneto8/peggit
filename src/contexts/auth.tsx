@@ -19,7 +19,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check initial auth state
     const storedUsername = localStorage.getItem('username');
     const hasLoginCookie = document.cookie.includes('isLoggedIn=true');
-    
+
     if (storedUsername && hasLoginCookie) {
       setUsername(storedUsername);
       setIsLoggedIn(true);
@@ -36,11 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoggedIn(false);
   };
 
-  return (
-    <AuthContext.Provider value={{ username, isLoggedIn, login, logout }}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return <AuthContext.Provider value={{ username, isLoggedIn, login, logout }}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth() {
