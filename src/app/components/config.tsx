@@ -1,32 +1,35 @@
 import { AuthResponse } from '@/types/auth';
 import { Forum, StoredForum } from '@/types/config';
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useDebounce } from '@uidotdev/usehooks';
-import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
 
-const ConfigComponent = ({
-  username,
-  initialData,
-  onLogout,
-}: {
-  username: string;
-  initialData: AuthResponse['configurations'];
-  onLogout: () => void;
-}) => {
+const ConfigComponent = ({ username, initialData }: { username: string; initialData: AuthResponse['configurations'] }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [generalContext, setGeneralContext] = useState(initialData.generalContext || '');
+  // Keep track of initial forum data for comparison
+  const initialForums = new Map(initialData.forums?.map(f => [f.id.toString(), f.specific_context || '']) || []);
   const [forums, setForums] = useState<Forum[]>(
     initialData.forums?.map((f: StoredForum) => ({
       id: f.id.toString(),
       identifier: f.identifier,
-      specificContext: f.specific_context,
+      specificContext: f.specific_context || '',
       isValid: undefined,
       isValidating: false,
     })) || [],
   );
   const [error, setError] = useState<string | null>(null);
   const [pendingValidation, setPendingValidation] = useState<{ id: string; value: string } | null>(null);
+
+  // Debug log for forum changes
+  useEffect(() => {
+    console.log('Initial Forums:', Object.fromEntries(initialForums));
+    console.log('Current Forums:', forums);
+    console.log(
+      'Has Changes:',
+      !forums.every(forum => (initialForums.has(forum.id) ? forum.specificContext === initialForums.get(forum.id) : false)),
+    );
+  }, [forums, initialForums]);
 
   const validateSubreddit = useCallback(
     async (forumId: string, identifier: string) => {
@@ -85,12 +88,6 @@ const ConfigComponent = ({
     return results.every(Boolean);
   };
 
-  const handleLogout = () => {
-    Cookies.remove('isLoggedIn', { path: '/' });
-    localStorage.clear();
-    onLogout();
-  };
-
   const handleSubmit = async () => {
     if (isSaving) return;
     setIsSaving(true);
@@ -125,20 +122,25 @@ const ConfigComponent = ({
     }
   };
 
+  const isSaveButtonDisabled = useMemo(() => {
+    return (
+      isSaving ||
+      forums.some(forum => forum.isValidating || forum.isValid === false) ||
+      forums.length === 0 ||
+      !generalContext.trim() ||
+      (generalContext === initialData.generalContext &&
+        !forums.some(forum => {
+          if (!initialForums.has(forum.id)) return forum.identifier !== '' && forum.isValid;
+
+          const initialContext = initialForums.get(forum.id) || '';
+          const hasContextChanged = forum.specificContext !== initialContext;
+          return hasContextChanged;
+        }))
+    );
+  }, [isSaving, forums, generalContext, initialData]);
+
   return (
     <div className='container mx-auto p-6 max-w-4xl'>
-      <div className='flex justify-between items-center mb-6'>
-        <h1 className='text-xl font-semibold'>Welcome, {username}</h1>
-        <button
-          onClick={handleLogout}
-          disabled={isSaving}
-          className='px-4 py-2 bg-gray-700 text-white rounded-md hover:bg-gray-600
-            disabled:opacity-50 disabled:cursor-not-allowed'
-        >
-          Logout
-        </button>
-      </div>
-
       <div className='mb-6'>
         <label className='block text-sm font-medium text-gray-300 mb-1'>General Context</label>
         <textarea
@@ -183,6 +185,7 @@ const ConfigComponent = ({
             <div key={forum.id} className='p-4 border border-gray-700 rounded-md bg-gray-800'>
               <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4'>
                 <div className='relative flex-1'>
+                  <label className='block text-sm font-medium text-gray-300 mb-1'>Subreddit</label>
                   <input
                     type='text'
                     value={forum.identifier}
@@ -222,6 +225,7 @@ const ConfigComponent = ({
                   Remove
                 </button>
               </div>
+              <label className='block text-sm font-medium text-gray-300 mb-1'>Specific Context</label>
               <textarea
                 value={forum.specificContext}
                 disabled={isSaving}
@@ -244,18 +248,10 @@ const ConfigComponent = ({
         <div className='mt-6'>
           <button
             onClick={handleSubmit}
-            disabled={
-              isSaving ||
-              forums.some(forum => forum.isValidating || forum.isValid === false) ||
-              forums.length === 0 ||
-              !generalContext.trim()
-            }
+            disabled={isSaveButtonDisabled}
             className={`w-full px-4 py-3 rounded-md text-lg font-semibold transition-colors duration-300 
               ${
-                isSaving ||
-                forums.some(forum => forum.isValidating || forum.isValid === false) ||
-                forums.length === 0 ||
-                !generalContext.trim()
+                isSaveButtonDisabled
                   ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                   : 'bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500'
               }`}

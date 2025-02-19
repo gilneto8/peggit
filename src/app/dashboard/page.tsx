@@ -33,13 +33,6 @@ const DashboardPage = () => {
     setIsLoading(false);
   }, [router]);
 
-  const handleLogout = () => {
-    Cookies.remove('isLoggedIn', { path: '/' });
-    localStorage.clear();
-    toast.success('Logged out successfully');
-    router.push('/');
-  };
-
   if (isLoading) {
     return (
       <div className='min-h-screen bg-gray-900 text-gray-100 flex items-center justify-center'>
@@ -50,9 +43,7 @@ const DashboardPage = () => {
 
   return (
     <div className='min-h-screen bg-gray-900 text-gray-100'>
-      <div className='container mx-auto p-6'>
-        {configData && <ConfigComponent username={username} initialData={configData} onLogout={handleLogout} />}
-      </div>
+      <div className='container mx-auto p-6'>{configData && <ConfigComponent username={username} initialData={configData} />}</div>
     </div>
   );
 };

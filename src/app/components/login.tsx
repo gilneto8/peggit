@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
+import { useAuth } from '@/contexts/auth';
 
 const LoginComponent = () => {
   const router = useRouter();
+  const { login } = useAuth();
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -31,6 +33,7 @@ const LoginComponent = () => {
       localStorage.setItem('username', username);
       localStorage.setItem('configData', JSON.stringify(data.configurations));
 
+      login(username);
       toast.success(`Welcome back, ${username}!`);
       router.push('/dashboard');
     } catch (err) {
