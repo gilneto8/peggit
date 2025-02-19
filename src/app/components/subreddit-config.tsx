@@ -142,7 +142,8 @@ const ConfigComponent = ({ username, initialData }: { username: string; initialD
   }, [isSaving, forums, generalContext, initialData, initialForums]);
 
   return (
-    <div className='container mx-auto p-6 max-w-4xl'>
+    <div className='container mx-auto p-4 max-w-4xl'>
+      <h2 className='text-xl font-semibold mb-4 text-gray-100'>Subreddit configuration</h2>
       <div className='mb-6'>
         <label className='block text-sm font-medium text-gray-300 mb-1'>General Context</label>
         <textarea
