@@ -14,7 +14,8 @@ interface MultiRangeSliderProps {
   max: number;
   minValue: number;
   maxValue: number;
-  onChange: (values: { min: number; max: number }) => void;
+  onChange?: (values: { min: number; max: number }) => void;
+  onChangeEnd: (values: { min: number; max: number }) => void;
   step?: number;
   label?: string;
   formatValue?: (value: number) => string;
@@ -26,6 +27,7 @@ const MultiRangeSlider: React.FC<MultiRangeSliderProps> = ({
   minValue,
   maxValue,
   onChange,
+  onChangeEnd,
   step = 0.5,
   label,
   formatValue = formatTime,
@@ -63,7 +65,7 @@ const MultiRangeSlider: React.FC<MultiRangeSliderProps> = ({
   }, [maxVal, getPercent]);
 
   const handleDragEnd = () => {
-    onChange({ min: minVal, max: maxVal });
+    onChangeEnd({ min: minVal, max: maxVal });
   };
 
   // Prevent unnecessary re-renders and handle prop changes
@@ -101,6 +103,7 @@ const MultiRangeSlider: React.FC<MultiRangeSliderProps> = ({
             const value = Math.min(Number(event.target.value), maxVal - step);
             setMinVal(value);
             minValRef.current = value;
+            onChange?.({ min: value, max: maxVal });
           }}
           className='absolute w-full h-2 -mt-2 pointer-events-none appearance-none bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-gray-200 hover:[&::-webkit-slider-thumb]:bg-blue-600'
         />
@@ -117,6 +120,7 @@ const MultiRangeSlider: React.FC<MultiRangeSliderProps> = ({
             const value = Math.max(Number(event.target.value), minVal + step);
             setMaxVal(value);
             maxValRef.current = value;
+            onChange?.({ min: minVal, max: value });
           }}
           className='absolute w-full h-2 -mt-2 pointer-events-none appearance-none bg-transparent [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-blue-500 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-gray-200 hover:[&::-webkit-slider-thumb]:bg-blue-600'
         />

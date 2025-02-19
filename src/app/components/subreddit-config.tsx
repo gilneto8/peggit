@@ -190,45 +190,47 @@ const SubredditConfigComponent: React.FC<SubredditConfigProps> = ({ username, in
             <div key={forum.id} className='p-4 border border-gray-700 rounded-md bg-gray-800'>
               <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4'>
                 <div className='relative flex-1'>
-                  <label className='block text-sm font-medium text-gray-300 mb-1'>Subreddit</label>
-                  <input
-                    type='text'
-                    value={forum.identifier}
-                    disabled={isSaving}
-                    onChange={e => {
-                      const newValue = e.target.value;
-                      setForums(currentForums =>
-                        currentForums.map(f =>
-                          f.id === forum.id ? { ...f, identifier: newValue, isValid: undefined, validationError: null } : f,
-                        ),
-                      );
-                      setPendingValidation({ id: forum.id, value: newValue });
-                    }}
-                    placeholder='Subreddit name'
-                    className={`px-3 py-2 pr-10 bg-gray-700 border-2 rounded-md text-gray-100 w-full 
+                  <label className='text-sm font-medium text-gray-300 mb-1'>Subreddit</label>
+                  <div className='flex flex-row space-x-2'>
+                    <input
+                      type='text'
+                      value={forum.identifier}
+                      disabled={isSaving}
+                      onChange={e => {
+                        const newValue = e.target.value;
+                        setForums(currentForums =>
+                          currentForums.map(f =>
+                            f.id === forum.id ? { ...f, identifier: newValue, isValid: undefined, validationError: null } : f,
+                          ),
+                        );
+                        setPendingValidation({ id: forum.id, value: newValue });
+                      }}
+                      placeholder='Subreddit name'
+                      className={`px-3 py-2 pr-10 bg-gray-700 border-2 rounded-md text-gray-100 w-full 
                       ${forum.isValidating ? 'border-yellow-500' : forum.isValid === false ? 'border-red-500' : 'border-gray-600'}
                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                       disabled:opacity-50 disabled:cursor-not-allowed`}
-                  />
-                  <div className='absolute right-3 top-1/2 -translate-y-1/2 pt-5'>
-                    {forum.isValidating ? (
-                      <span className='bg-yellow-500 text-white font-bold text-[10px] px-2 py-1 rounded'>Validating</span>
-                    ) : forum.isValid === false ? (
-                      <span className='bg-red-500 text-white font-bold text-[10px] px-2 py-1 rounded'>Invalid</span>
-                    ) : forum.isValid ? (
-                      <span className='bg-green-500 text-white font-bold text-[10px] px-2 py-1 rounded'>Valid</span>
-                    ) : null}
-                  </div>
-                </div>
-                <button
-                  onClick={() => setForums(forums.filter(f => f.id !== forum.id))}
-                  disabled={isSaving}
-                  className='px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 
+                    />
+                    <div className='absolute right-28 top-1/2 -translate-y-1/2 pt-5'>
+                      {forum.isValidating ? (
+                        <span className='bg-yellow-500 text-white font-bold text-[10px] px-2 py-1 rounded'>Validating</span>
+                      ) : forum.isValid === false ? (
+                        <span className='bg-red-500 text-white font-bold text-[10px] px-2 py-1 rounded'>Invalid</span>
+                      ) : forum.isValid ? (
+                        <span className='bg-green-500 text-white font-bold text-[10px] px-2 py-1 rounded'>Valid</span>
+                      ) : null}
+                    </div>
+                    <button
+                      onClick={() => setForums(forums.filter(f => f.id !== forum.id))}
+                      disabled={isSaving}
+                      className='px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 
                     focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900
                     disabled:opacity-50 disabled:cursor-not-allowed'
-                >
-                  Remove
-                </button>
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
               </div>
               <label className='block text-sm font-medium text-gray-300 mb-1'>Specific Context</label>
               <textarea
