@@ -3,13 +3,14 @@
 import Link from 'next/link';
 import Cookies from 'js-cookie';
 import toast from 'react-hot-toast';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useRef, useEffect, useState } from 'react';
 import { ChevronDownIcon } from '@heroicons/react/24/solid';
 import { useAuth } from '@/contexts/auth';
 
 export const Header = () => {
   const router = useRouter();
+  const pathname = usePathname();
   const { username, isLoggedIn, logout } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -37,15 +38,23 @@ export const Header = () => {
     <div className='fixed top-0 left-0 right-0 h-16 bg-gray-900 border-b border-gray-200 z-50'>
       <div className='container mx-auto h-full px-4 flex items-center justify-between'>
         <div className='flex items-center space-x-4'>
-          <Link href={isLoggedIn ? '/dashboard' : '/'} className='text-white font-medium text-xl'>
+          <Link href={isLoggedIn ? '/configuration' : '/'} className='text-white font-medium text-xl'>
             Peggit
           </Link>
         </div>
         {isLoggedIn && (
           <nav className='flex items-center space-x-6'>
-            <Link href='/dashboard' className='text-gray-600 hover:text-gray-400 transition-colors'>
-              Dashboard
-            </Link>
+            <div className='mr-32 space-x-6'>
+              <Link href='/dashboard' className='text-gray-600 hover:text-gray-400 transition-colors pointer-events-none opacity-50'>
+                Dashboard
+              </Link>
+              <Link
+                href='/configuration'
+                className={`transition-colors ${pathname === '/configuration' ? 'text-white underline' : 'text-gray-600 hover:text-gray-400'}`}
+              >
+                Configuration
+              </Link>
+            </div>
             <div className='relative' ref={dropdownRef}>
               <button
                 onClick={() => setIsOpen(!isOpen)}

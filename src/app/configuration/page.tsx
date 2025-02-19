@@ -6,14 +6,14 @@ import { AuthResponse } from '@/types/auth';
 import ConfigComponent from '../components/config';
 import Cookies from 'js-cookie';
 
-const DashboardPage = () => {
+const ConfigurationPage = () => {
   const router = useRouter();
   const [username, setUsername] = useState('');
   const [configData, setConfigData] = useState<AuthResponse['configurations'] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.debug('Dashboard useEffect running...');
+    console.debug('Configuration useEffect running...');
     const isLoggedIn = Cookies.get('isLoggedIn');
     const storedUsername = localStorage.getItem('username');
     const storedConfigData = JSON.parse(localStorage.getItem('configData') || 'null');
@@ -26,7 +26,7 @@ const DashboardPage = () => {
       return;
     }
 
-    console.debug('Setting dashboard state...');
+    console.debug('Setting configuration state...');
     setUsername(storedUsername);
     setConfigData(storedConfigData);
     setIsLoading(false);
@@ -47,4 +47,4 @@ const DashboardPage = () => {
   );
 };
 
-export default DashboardPage;
+export default ConfigurationPage;

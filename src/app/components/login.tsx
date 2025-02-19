@@ -35,7 +35,7 @@ const LoginComponent = () => {
 
       login(username);
       toast.success(`Welcome back, ${username}!`);
-      router.push('/dashboard');
+      router.push('/configuration');
     } catch (err) {
       console.error(err);
       toast.error('Login failed. Please check your credentials.');
