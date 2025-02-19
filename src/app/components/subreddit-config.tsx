@@ -25,16 +25,6 @@ const SubredditConfigComponent: React.FC<SubredditConfigProps> = ({ username, in
   const [error, setError] = useState<string | null>(null);
   const [pendingValidation, setPendingValidation] = useState<{ id: string; value: string } | null>(null);
 
-  // Debug log for forum changes
-  useEffect(() => {
-    console.log('Initial Forums:', Object.fromEntries(initialForums));
-    console.log('Current Forums:', forums);
-    console.log(
-      'Has Changes:',
-      !forums.every(forum => (initialForums.has(forum.id) ? forum.specificContext === initialForums.get(forum.id) : false)),
-    );
-  }, [forums, initialForums]);
-
   const validateSubreddit = useCallback(
     async (forumId: string, identifier: string) => {
       if (!identifier) return false;
@@ -116,6 +106,16 @@ const SubredditConfigComponent: React.FC<SubredditConfigProps> = ({ username, in
       });
 
       if (!response.ok) throw new Error('Failed to save configuration');
+
+      // Update localStorage with new forums and general context
+      const storedConfig = JSON.parse(localStorage.getItem('configData') || '{}');
+      storedConfig.configurations = {
+        ...storedConfig.configurations,
+        forums: forums,
+        generalContext,
+      };
+      localStorage.setItem('configData', JSON.stringify(storedConfig));
+
       toast.success('Configuration saved successfully!');
       setError(null);
     } catch (err) {
@@ -127,20 +127,29 @@ const SubredditConfigComponent: React.FC<SubredditConfigProps> = ({ username, in
   };
 
   const isSaveButtonDisabled = useMemo(() => {
-    return (
-      isSaving ||
-      forums.some(forum => forum.isValidating || forum.isValid === false) ||
-      forums.length === 0 ||
-      !generalContext.trim() ||
-      (generalContext === initialData.generalContext &&
-        !forums.some(forum => {
-          if (!initialForums.has(forum.id)) return forum.identifier !== '' && forum.isValid;
+    const hasValidForums = forums.length === 0 || forums.every(forum => forum.isValid !== false);
+    const isValidating = forums.some(forum => forum.isValidating);
+    const hasGeneralContext = generalContext.trim().length > 0;
 
-          const initialContext = initialForums.get(forum.id) || '';
-          const hasContextChanged = forum.specificContext !== initialContext;
-          return hasContextChanged;
-        }))
-    );
+    // Check if there are any changes
+    const hasForumChanges =
+      // Different number of forums
+      forums.length !== initialData.forums?.length ||
+      // Changed forums
+      forums.some(forum => {
+        // New forum
+        if (!initialForums.has(forum.id)) {
+          return forum.identifier !== '';
+        }
+        // Changed context
+        const initialContext = initialForums.get(forum.id) || '';
+        return forum.specificContext !== initialContext;
+      });
+
+    const hasGeneralContextChanges = generalContext !== initialData.generalContext;
+    const hasChanges = hasForumChanges || hasGeneralContextChanges;
+
+    return isSaving || !hasValidForums || isValidating || !hasGeneralContext || !hasChanges;
   }, [isSaving, forums, generalContext, initialData, initialForums]);
 
   return (

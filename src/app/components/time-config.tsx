@@ -44,26 +44,20 @@ const TimeConfigComponent: React.FC<TimeConfigProps> = ({ username, initialData 
     ]);
   }, [timeRanges]);
 
-  const removeTimeRange = useCallback(
-    (rangeId: string) => {
-      setTimeRanges(currentRanges => currentRanges.filter(range => range.id !== rangeId));
-    },
-    [timeRanges],
-  );
+  const removeTimeRange = useCallback((rangeId: string) => {
+    setTimeRanges(currentRanges => currentRanges.filter(range => range.id !== rangeId));
+  }, []);
 
-  const updateTimeRange = useCallback(
-    (rangeId: string, updates: Partial<TimeRange>) => {
-      setTimeRanges(currentRanges => currentRanges.map(range => (range.id === rangeId ? { ...range, ...updates } : range)));
-    },
-    [timeRanges],
-  );
+  const updateTimeRange = useCallback((rangeId: string, updates: Partial<TimeRange>) => {
+    setTimeRanges(currentRanges => currentRanges.map(range => (range.id === rangeId ? { ...range, ...updates } : range)));
+  }, []);
 
-  const saveConfiguration = useCallback(async () => {
+  const saveTimeRanges = useCallback(async () => {
     setIsSaving(true);
     setError(null);
 
     try {
-      const response = await fetch('/api/config', {
+      const response = await fetch('/api/time-ranges', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -77,11 +71,21 @@ const TimeConfigComponent: React.FC<TimeConfigProps> = ({ username, initialData 
 
       if (!response.ok) throw new Error('Failed to save time configuration');
 
-      toast.success('Time configuration saved successfully!');
+      const data = await response.json();
+
+      // Update localStorage with new time ranges
+      const storedConfig = JSON.parse(localStorage.getItem('configData') || '{}');
+      storedConfig.configurations = {
+        ...storedConfig.configurations,
+        timeRanges: data.timeRanges,
+      };
+      localStorage.setItem('configData', JSON.stringify(storedConfig));
+
+      toast.success('Time ranges saved successfully!');
       setError(null);
     } catch (err) {
       console.error(err);
-      toast.error('Failed to save time configuration. Please try again.');
+      toast.error('Failed to save time ranges. Please try again.');
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
     } finally {
       setIsSaving(false);
@@ -119,13 +123,7 @@ const TimeConfigComponent: React.FC<TimeConfigProps> = ({ username, initialData 
                 maxValue={range.max}
                 onChange={({ min, max }) => {
                   // Update local state for smooth dragging
-                  setTimeRanges(prev =>
-                    prev.map(r =>
-                      r.id === range.id
-                        ? { ...r, min, max }
-                        : r
-                    )
-                  );
+                  setTimeRanges(prev => prev.map(r => (r.id === range.id ? { ...r, min, max } : r)));
                 }}
                 onChangeEnd={({ min, max }) => {
                   // Update final state when dragging ends
@@ -151,7 +149,7 @@ const TimeConfigComponent: React.FC<TimeConfigProps> = ({ username, initialData 
 
       <div className='mt-4'>
         <button
-          onClick={saveConfiguration}
+          onClick={saveTimeRanges}
           disabled={isSaveButtonDisabled}
           className={`w-full px-4 py-3 rounded-md text-lg font-semibold transition-colors duration-300 
             ${

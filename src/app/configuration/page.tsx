@@ -14,23 +14,44 @@ const ConfigurationPage = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    console.debug('Configuration useEffect running...');
-    const isLoggedIn = Cookies.get('isLoggedIn');
-    const storedUsername = localStorage.getItem('username');
-    const storedConfigData = JSON.parse(localStorage.getItem('configData') || 'null');
+    const fetchConfigData = async () => {
+      const isLoggedIn = Cookies.get('isLoggedIn');
+      const storedUsername = localStorage.getItem('username');
 
-    console.debug('Auth state:', { isLoggedIn, storedUsername, hasConfigData: !!storedConfigData });
+      if (!isLoggedIn || !storedUsername) {
+        router.push('/');
+        return;
+      }
 
-    if (!isLoggedIn || !storedUsername || !storedConfigData) {
-      console.debug('Missing required data, redirecting to login...');
-      router.push('/');
-      return;
-    }
+      try {
+        // Fetch fresh data from server
+        const response = await fetch(`/api/config/get?username=${encodeURIComponent(storedUsername)}`);
 
-    console.debug('Setting configuration state...');
-    setUsername(storedUsername);
-    setConfigData(storedConfigData);
-    setIsLoading(false);
+        if (!response.ok) throw new Error('Failed to fetch configuration');
+
+        const data = await response.json();
+
+        // Update localStorage with fresh data
+        localStorage.setItem('configData', JSON.stringify(data.configurations));
+
+        setUsername(storedUsername);
+        setConfigData(data.configurations);
+      } catch (error) {
+        console.error('Failed to fetch configuration:', error);
+        // Fallback to stored data if server fetch fails
+        const storedConfigData = JSON.parse(localStorage.getItem('configData') || 'null');
+        if (storedConfigData) {
+          setUsername(storedUsername);
+          setConfigData(storedConfigData);
+        } else {
+          router.push('/');
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchConfigData();
   }, [router]);
 
   if (isLoading) {

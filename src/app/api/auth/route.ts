@@ -44,11 +44,20 @@ export async function POST(request: Request) {
       WHERE config_id = ${configResult.rows[0].id}
     `;
 
+    // Fetch time ranges for this configuration
+    const timeRangesResult = await sql`
+      SELECT id, min, max
+      FROM time_ranges
+      WHERE config_id = ${configResult.rows[0].id}
+    `;
+
+    console.log(configResult.rows[0]);
     return NextResponse.json({
       success: true,
       configurations: {
         generalContext: configResult.rows[0].general_context || '',
         forums: forumsResult.rows || [],
+        timeRanges: timeRangesResult.rows || [],
       },
     });
   } catch (error) {
