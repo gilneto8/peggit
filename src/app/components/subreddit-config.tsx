@@ -183,7 +183,7 @@ const ConfigComponent = ({ username, initialData }: { username: string; initialD
           </button>
         </div>
 
-        <div className='space-y-4'>
+        <div className='space-y-4 overflow-auto max-h-[400px]'>
           {forums.map(forum => (
             <div key={forum.id} className='p-4 border border-gray-700 rounded-md bg-gray-800'>
               <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4'>
@@ -208,7 +208,7 @@ const ConfigComponent = ({ username, initialData }: { username: string; initialD
                       focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
                       disabled:opacity-50 disabled:cursor-not-allowed`}
                   />
-                  <div className='absolute right-3 top-1/2 -translate-y-1/2'>
+                  <div className='absolute right-3 top-1/2 -translate-y-1/2 pt-5'>
                     {forum.isValidating ? (
                       <span className='bg-yellow-500 text-white font-bold text-[10px] px-2 py-1 rounded'>Validating</span>
                     ) : forum.isValid === false ? (

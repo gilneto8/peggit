@@ -44,7 +44,7 @@ const ConfigurationPage = () => {
   return (
     <div className='min-h-screen bg-gray-900 text-gray-100'>
       <div className='max-w-[1400px] mx-auto px-6 py-4'>
-        <div className='grid grid-cols-[70%_30%] gap-4 py-20'>
+        <div className='grid grid-cols-[70%_30%] gap-4'>
           <div className='pr-2'>{configData && <ConfigComponent username={username} initialData={configData} />}</div>
           <div className='pl-2'>
             <TimeConfigComponent />
