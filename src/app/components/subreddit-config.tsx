@@ -1,28 +1,9 @@
-import { AuthResponse } from '@/types/auth';
-import { Forum, StoredForum } from '@/types/config';
-import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDebounce } from '@uidotdev/usehooks';
-import toast from 'react-hot-toast';
+import { useConfig } from '@/contexts/config';
 
-type SubredditConfigProps = { username: string; initialData: AuthResponse['configurations'] };
-
-const SubredditConfigComponent: React.FC<SubredditConfigProps> = ({ username, initialData }) => {
-  const [isSaving, setIsSaving] = useState(false);
-  const [generalContext, setGeneralContext] = useState(initialData.generalContext || '');
-  const initialForums = useMemo(
-    () => new Map(initialData.forums?.map(f => [f.id.toString(), f.specific_context || '']) || []),
-    [initialData],
-  );
-  const [forums, setForums] = useState<Forum[]>(
-    initialData.forums?.map((f: StoredForum) => ({
-      id: f.id.toString(),
-      identifier: f.identifier,
-      specificContext: f.specific_context || '',
-      isValid: undefined,
-      isValidating: false,
-    })) || [],
-  );
-  const [error, setError] = useState<string | null>(null);
+const SubredditConfigComponent: React.FC = () => {
+  const { username, forums, setForums, generalContext, setGeneralContext, isSaving } = useConfig();
   const [pendingValidation, setPendingValidation] = useState<{ id: string; value: string } | null>(null);
 
   const validateSubreddit = useCallback(
@@ -65,92 +46,16 @@ const SubredditConfigComponent: React.FC<SubredditConfigProps> = ({ username, in
         return false;
       }
     },
-    [username],
+    [username, setForums],
   );
 
   const debouncedIdentifier = useDebounce(pendingValidation, 500);
 
-  // Effect to trigger validation when debounced value changes
   useEffect(() => {
     if (debouncedIdentifier) {
       validateSubreddit(debouncedIdentifier.id, debouncedIdentifier.value);
     }
   }, [debouncedIdentifier, validateSubreddit]);
-
-  const validateAllSubreddits = async () => {
-    const results = await Promise.all(forums.map(forum => validateSubreddit(forum.id, forum.identifier)));
-    return results.every(Boolean);
-  };
-
-  const handleSubmit = async () => {
-    if (isSaving) return;
-    setIsSaving(true);
-    setError(null);
-
-    try {
-      const isValid = await validateAllSubreddits();
-      if (!isValid) {
-        toast.error('One or more subreddits are invalid. Please check and try again.');
-        setIsSaving(false);
-        return;
-      }
-
-      const response = await fetch('/api/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username,
-          generalContext,
-          forums,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to save configuration');
-
-      // Update localStorage with new forums and general context
-      const storedConfig = JSON.parse(localStorage.getItem('configData') || '{}');
-      storedConfig.configurations = {
-        ...storedConfig.configurations,
-        forums: forums,
-        generalContext,
-      };
-      localStorage.setItem('configData', JSON.stringify(storedConfig));
-
-      toast.success('Configuration saved successfully!');
-      setError(null);
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to save configuration. Please try again.');
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const isSaveButtonDisabled = useMemo(() => {
-    const hasValidForums = forums.length === 0 || forums.every(forum => forum.isValid !== false);
-    const isValidating = forums.some(forum => forum.isValidating);
-    const hasGeneralContext = generalContext.trim().length > 0;
-
-    // Check if there are any changes
-    const hasForumChanges =
-      // Different number of forums
-      forums.length !== initialData.forums?.length ||
-      // Changed forums
-      forums.some(forum => {
-        // New forum
-        if (!initialForums.has(forum.id)) {
-          return forum.identifier !== '';
-        }
-        // Changed context
-        const initialContext = initialForums.get(forum.id) || '';
-        return forum.specificContext !== initialContext;
-      });
-
-    const hasGeneralContextChanges = generalContext !== initialData.generalContext;
-    const hasChanges = hasForumChanges || hasGeneralContextChanges;
-
-    return isSaving || !hasValidForums || isValidating || !hasGeneralContext || !hasChanges;
-  }, [isSaving, forums, generalContext, initialData, initialForums]);
 
   return (
     <div className='container mx-auto p-4 max-w-4xl'>
@@ -257,23 +162,6 @@ const SubredditConfigComponent: React.FC<SubredditConfigProps> = ({ username, in
               />
             </div>
           ))}
-        </div>
-
-        {error && <p className='text-red-500 mt-4'>{error}</p>}
-
-        <div className='mt-6'>
-          <button
-            onClick={handleSubmit}
-            disabled={isSaveButtonDisabled}
-            className={`w-full px-4 py-3 rounded-md text-lg font-semibold transition-colors duration-300 
-              ${
-                isSaveButtonDisabled
-                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                  : 'bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-blue-500'
-              }`}
-          >
-            {isSaving ? 'Saving...' : 'Save Configuration'}
-          </button>
         </div>
       </div>
     </div>
