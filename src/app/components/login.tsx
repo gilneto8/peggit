@@ -31,6 +31,7 @@ const LoginComponent = () => {
       // Set both cookie and localStorage
       Cookies.set('isLoggedIn', 'true', { path: '/' });
       localStorage.setItem('username', username);
+      localStorage.setItem('userId', data.userId);
       localStorage.setItem('configData', JSON.stringify(data.configurations));
 
       login(username);

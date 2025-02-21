@@ -1,5 +1,6 @@
 export interface AuthResponse {
   success: boolean;
+  userId: string;
   configurations: {
     generalContext: string;
     forums: ForumResponse[];

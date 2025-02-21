@@ -51,9 +51,9 @@ export async function POST(request: Request) {
       WHERE config_id = ${configResult.rows[0].id}
     `;
 
-    console.log(configResult.rows[0]);
     return NextResponse.json({
       success: true,
+      userId: userId,
       configurations: {
         generalContext: configResult.rows[0].general_context || '',
         forums: forumsResult.rows || [],

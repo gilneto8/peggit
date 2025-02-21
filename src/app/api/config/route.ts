@@ -3,10 +3,10 @@ import { sql } from '@vercel/postgres';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const username = searchParams.get('username');
+  const userId = searchParams.get('userId');
 
-  if (!username) {
-    return NextResponse.json({ error: 'Username is required' }, { status: 400 });
+  if (!userId) {
+    return NextResponse.json({ error: 'User ID is required' }, { status: 400 });
   }
 
   try {
@@ -14,7 +14,7 @@ export async function GET(request: Request) {
       SELECT c.id, c.general_context
       FROM users u
       LEFT JOIN configurations c ON c.user_id = u.id
-      WHERE u.username = ${username}
+      WHERE u.id = ${userId}
     `;
 
     if (configResult.rows.length === 0) {
@@ -49,19 +49,17 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { username, generalContext, forums, timeRanges } = await request.json();
+    const { userId, generalContext, forums, timeRanges } = await request.json();
 
     // Verify user credentials against database
     const userResult = await sql`
       SELECT id FROM users 
-      WHERE username = ${username}
+      WHERE id = ${userId}
     `;
 
     if (userResult.rows.length === 0) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-
-    const userId = userResult.rows[0].id;
 
     // Insert or update configuration
     const configResult = await sql`

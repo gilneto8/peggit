@@ -18,6 +18,7 @@
     "@uidotdev/usehooks": "^2.4.1",
     "@vercel/postgres": "^0.10.0",
     "crypto": "^1.0.1",
+    "date-fns": "^4.1.0",
     "js-cookie": "^3.0.5",
     "next": "^15.0.0-rc.0",
     "openai": "^4.24.0",

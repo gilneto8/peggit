@@ -3,7 +3,7 @@ import { useDebounce } from '@uidotdev/usehooks';
 import { useConfig } from '@/contexts/config';
 
 const SubredditConfigComponent: React.FC = () => {
-  const { username, forums, setForums, generalContext, setGeneralContext, isSaving } = useConfig();
+  const { username, userId, forums, setForums, generalContext, setGeneralContext, isSaving } = useConfig();
   const [pendingValidation, setPendingValidation] = useState<{ id: string; value: string } | null>(null);
 
   const validateSubreddit = useCallback(
@@ -14,7 +14,7 @@ const SubredditConfigComponent: React.FC = () => {
       setForums(currentForums => currentForums.map(f => (f.id === forumId ? { ...f, isValidating: true } : f)));
 
       try {
-        const response = await fetch(`/api/validate-subreddit?name=${identifier}&username=${username}`);
+        const response = await fetch(`/api/validate-subreddit?name=${identifier}&username=${username}&userId=${userId}`);
         const { exists } = await response.json();
         setForums(currentForums =>
           currentForums.map(f =>
@@ -46,7 +46,7 @@ const SubredditConfigComponent: React.FC = () => {
         return false;
       }
     },
-    [username, setForums],
+    [userId, setForums, username],
   );
 
   const debouncedIdentifier = useDebounce(pendingValidation, 500);

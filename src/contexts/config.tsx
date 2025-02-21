@@ -5,6 +5,7 @@ import toast from 'react-hot-toast';
 
 type ConfigContextType = {
   // Data
+  userId: string;
   username: string;
   generalContext: string;
   forums: Forum[];
@@ -25,10 +26,12 @@ const ConfigContext = createContext<ConfigContextType | null>(null);
 
 export function ConfigProvider({
   children,
+  userId,
   username,
   initialData,
 }: {
   children: ReactNode;
+  userId: string;
   username: string;
   initialData: AuthResponse['configurations'];
 }) {
@@ -169,6 +172,7 @@ export function ConfigProvider({
 
   const value = {
     // Data
+    userId,
     username,
     generalContext,
     forums,

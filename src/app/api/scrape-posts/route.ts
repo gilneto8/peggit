@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     }
 
     // Forward the request to the external API
-    const apiResponse = await fetch(apiUrl, {
+    const apiResponse = await fetch(`${apiUrl}/scrape`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,10 +53,10 @@ export async function POST(request: Request) {
     }
 
     // Parse and return the API response
-    const posts = await apiResponse.json();
+    const data = await apiResponse.json();
     return NextResponse.json({
       success: true,
-      posts: posts,
+      data: data.data,
     });
   } catch (error) {
     console.error('Scrape posts error:', error);

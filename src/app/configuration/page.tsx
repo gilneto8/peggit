@@ -14,20 +14,24 @@ const ConfigurationPage = () => {
   const [username, setUsername] = useState('');
   const [configData, setConfigData] = useState<AuthResponse['configurations'] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [userId, setUserId] = useState('');
 
   useEffect(() => {
     const fetchConfigData = async () => {
       const isLoggedIn = Cookies.get('isLoggedIn');
       const storedUsername = localStorage.getItem('username');
+      const storedUserId = localStorage.getItem('userId');
 
-      if (!isLoggedIn || !storedUsername) {
+      if (!isLoggedIn || !storedUserId || !storedUsername) {
+        localStorage.clear();
+        Cookies.remove('isLoggedIn', { path: '/' });
         router.push('/');
         return;
       }
 
       try {
         // Fetch fresh data from server
-        const response = await fetch(`/api/config?username=${encodeURIComponent(storedUsername)}`);
+        const response = await fetch(`/api/config?userId=${encodeURIComponent(storedUserId)}`);
 
         if (!response.ok) throw new Error('Failed to fetch configuration');
 
@@ -37,6 +41,7 @@ const ConfigurationPage = () => {
         localStorage.setItem('configData', JSON.stringify(data.configurations));
 
         setUsername(storedUsername);
+        setUserId(storedUserId);
         setConfigData(data.configurations);
       } catch (error) {
         console.error('Failed to fetch configuration:', error);
@@ -44,6 +49,7 @@ const ConfigurationPage = () => {
         const storedConfigData = JSON.parse(localStorage.getItem('configData') || 'null');
         if (storedConfigData) {
           setUsername(storedUsername);
+          setUserId(storedUserId);
           setConfigData(storedConfigData);
         } else {
           router.push('/');
@@ -67,7 +73,7 @@ const ConfigurationPage = () => {
   return (
     <div className='min-h-screen bg-gray-900 text-gray-100'>
       {configData && (
-        <ConfigProvider username={username} initialData={configData}>
+        <ConfigProvider username={username} userId={userId} initialData={configData}>
           <div className='max-w-[1400px] mx-auto px-6 py-4'>
             <div className='grid grid-cols-[70%_30%] space-x-4 pt-16'>
               <SubredditConfigComponent />

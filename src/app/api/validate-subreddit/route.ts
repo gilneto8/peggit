@@ -8,8 +8,9 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const subreddit = searchParams.get('name');
     const username = searchParams.get('username');
+    const userId = searchParams.get('userId');
 
-    if (!subreddit || !username) {
+    if (!subreddit || !username || !userId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
     }
 
@@ -17,7 +18,7 @@ export async function GET(request: Request) {
     const userResult = await sql`
       SELECT encrypted_password, password_iv, password_auth_tag
       FROM users 
-      WHERE username = ${username}
+      WHERE id = ${userId}
     `;
 
     if (userResult.rows.length === 0) {
