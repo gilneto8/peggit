@@ -16,14 +16,14 @@ const Toggle: React.FC<ToggleProps<string>> = ({ values, initialValue, onChange,
     const newValue = selectedValue === values[0] ? values[1] : values[0];
     setSelectedValue(newValue);
     onChange(newValue);
-  }, [selectedValue, onChange]);
+  }, [selectedValue, onChange, values]);
 
   // Handle prop changes
   useEffect(() => {
     if (initialValue !== selectedValue) {
       setSelectedValue(initialValue ?? values[0]);
     }
-  }, [initialValue, selectedValue]);
+  }, [initialValue, selectedValue, values]);
 
   return (
     <div className='relative'>
