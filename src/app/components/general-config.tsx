@@ -4,6 +4,7 @@ import React, { useCallback } from 'react';
 import MultiRangeSlider from './generic/multi-range-slider';
 import { useConfig } from '@/contexts/config';
 import { TimeRange } from '@/types/auth';
+import Toggle from './generic/toggle';
 
 const GeneralConfigComponent: React.FC = () => {
   const {
@@ -17,6 +18,8 @@ const GeneralConfigComponent: React.FC = () => {
     setLastHours,
     timeFilter,
     setTimeFilter,
+    orderBy,
+    setOrderBy,
   } = useConfig();
 
   const addNewTimeRange = useCallback(() => {
@@ -51,70 +54,82 @@ const GeneralConfigComponent: React.FC = () => {
         <h2 className='text-xl font-semibold text-gray-100'>General Configuration</h2>
       </div>
       <div>
-        <div className='mb-6'>
-          <label className='block text-sm font-medium text-gray-300 mb-1'>Top Comments Limit</label>
-          <input
-            type='number'
-            value={topCommentsLimit}
-            onChange={e => setTopCommentsLimit(Number(e.target.value))}
-            className='w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
+        <div className='border-b border-gray-700 mb-4'>
+          <div className='grid grid-cols-2 space-x-2'>
+            <div className='mb-6'>
+              <Toggle values={['new', 'top']} initialValue={orderBy} onChange={v => setOrderBy(v as 'new' | 'top')} label='Fetch' />
+            </div>
+            {orderBy === 'new' ? (
+              <div className='mb-6'>
+                <label className='block text-sm font-medium text-gray-300 mb-1'>New from the last (hours)</label>
+                <input
+                  type='number'
+                  value={lastHours}
+                  onChange={e => setLastHours(Number(e.target.value))}
+                  className='w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
               border-gray-600'
-            placeholder='Enter top comments limit'
-          />
-        </div>
-        <div className='mb-6'>
-          <label className='block text-sm font-medium text-gray-300 mb-1'>Top Posts Limit</label>
-          <input
-            type='number'
-            value={topPostsLimit}
-            onChange={e => setTopPostsLimit(Number(e.target.value))}
-            className='w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
+                  placeholder='Enter last hours'
+                />
+              </div>
+            ) : (
+              <div className='mb-6'>
+                <label className='block text-sm font-medium text-gray-300 mb-1'>Top in the last</label>
+                <select
+                  value={timeFilter}
+                  onChange={e => setTimeFilter(e.target.value as 'hour' | 'day' | 'week' | 'month' | 'year' | 'all')}
+                  className='h-[42px] w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
               border-gray-600'
-            placeholder='Enter top posts limit'
-          />
-        </div>
-        <div className='mb-6'>
-          <label className='block text-sm font-medium text-gray-300 mb-1'>Last Hours</label>
-          <input
-            type='number'
-            value={lastHours}
-            onChange={e => setLastHours(Number(e.target.value))}
-            className='w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
+                >
+                  <option value='hour'>Hour</option>
+                  <option value='day'>Day</option>
+                  <option value='week'>Week</option>
+                  <option value='month'>Month</option>
+                  <option value='year'>Year</option>
+                  <option value='all'>All</option>
+                </select>
+              </div>
+            )}
+          </div>
+          <div className='grid grid-cols-2 space-x-2'>
+            <div className='mb-6'>
+              <label className='block text-sm font-medium text-gray-300 mb-1'>Max # of posts</label>
+              <input
+                type='number'
+                value={topPostsLimit}
+                onChange={e => setTopPostsLimit(Number(e.target.value))}
+                className='w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
               border-gray-600'
-            placeholder='Enter last hours'
-          />
-        </div>
-        <div className='mb-6'>
-          <label className='block text-sm font-medium text-gray-300 mb-1'>Time Filter</label>
-          <select
-            value={timeFilter}
-            onChange={e => setTimeFilter(e.target.value as 'hour' | 'day' | 'week' | 'month' | 'year' | 'all')}
-            className='w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
+                placeholder='Enter top posts limit'
+              />
+            </div>
+            <div className='mb-6'>
+              <label className='block text-sm font-medium text-gray-300 mb-1'>Max # of comments</label>
+              <input
+                type='number'
+                value={topCommentsLimit}
+                onChange={e => setTopCommentsLimit(Number(e.target.value))}
+                className='w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
               border-gray-600'
-          >
-            <option value='hour'>Hour</option>
-            <option value='day'>Day</option>
-            <option value='week'>Week</option>
-            <option value='month'>Month</option>
-            <option value='year'>Year</option>
-            <option value='all'>All</option>
-          </select>
+                placeholder='Enter top comments limit'
+              />
+            </div>
+          </div>
         </div>
 
+        <label className='block text-sm font-medium text-gray-300 mb-4'>Post fetch time ranges</label>
         <button
           onClick={addNewTimeRange}
           className='px-4 py-2 mb-4 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-gray-900 
             disabled:opacity-50 disabled:cursor-not-allowed'
         >
-          Add Time Range
+          Add
         </button>
-
-        <div className='flex-grow overflow-auto max-h-[400px] space-y-4'>
+        <div className='flex-grow space-y-4'>
           {timeRanges.map(range => (
             <div key={range.id} className='rounded-lg py-2 flex flex-row space-x-4 px-2'>
               <div className='w-[80%]'>

@@ -26,6 +26,7 @@ type ConfigContextType = {
   setTopCommentsLimit: (limit: number) => void;
   setLastHours: (hours: number) => void;
   setTimeFilter: (filter: 'hour' | 'day' | 'week' | 'month' | 'year' | 'all') => void;
+  setOrderBy: (orderBy: 'new' | 'top') => void;
   setForums: (forums: Forum[] | ((prev: Forum[]) => Forum[])) => void;
   setTimeRanges: (ranges: TimeRange[] | ((prev: TimeRange[]) => TimeRange[])) => void;
   saveConfiguration: () => Promise<void>;

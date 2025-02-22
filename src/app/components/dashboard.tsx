@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import PostCard from './generic/PostCard';
+import PostCard from './generic/post-card';
 import { Post, ScrapePostsResponse } from '@/types/post';
 import { AuthResponse } from '@/types/auth';
 

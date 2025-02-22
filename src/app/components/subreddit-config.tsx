@@ -66,8 +66,8 @@ const SubredditConfigComponent: React.FC = () => {
           value={generalContext}
           onChange={e => setGeneralContext(e.target.value)}
           disabled={isSaving}
-          className={`w-full min-h-[80px] max-h-[200px] px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent overflow-auto
+          className={`w-full min-h-[100px] px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
+            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
             disabled:opacity-50 disabled:cursor-not-allowed
             ${!generalContext.trim() ? 'border-red-500' : 'border-gray-600'}`}
           placeholder='Enter general context here...'
@@ -99,7 +99,7 @@ const SubredditConfigComponent: React.FC = () => {
           </button>
         </div>
 
-        <div className='space-y-4 overflow-auto max-h-[400px]'>
+        <div className='space-y-4'>
           {forums.map(forum => (
             <div key={forum.id} className='p-4 border border-gray-700 rounded-md bg-gray-800'>
               <div className='flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4'>

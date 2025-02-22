@@ -79,6 +79,8 @@ const ConfigurationPage = () => {
               <SubredditConfigComponent />
               <GeneralConfigComponent />
             </div>
+          </div>
+          <div className='sticky bottom-0 bg-gray-900 px-4 pt-4 h-[150px] w-full border-t border-gray-200'>
             <ActionComponent />
           </div>
         </ConfigProvider>

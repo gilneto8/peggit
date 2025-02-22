@@ -11,7 +11,7 @@ const ActionComponent: React.FC = () => {
       <button
         onClick={saveConfiguration}
         disabled={!canSave || isSaving}
-        className={`w-[15%] px-4 py-3 rounded-md text-lg font-semibold transition-colors duration-300 
+        className={`w-[300px] px-4 py-3 rounded-md text-lg font-semibold transition-colors duration-300 
           ${
             !canSave || isSaving
               ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
