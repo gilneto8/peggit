@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { AuthResponse } from '@/types/auth';
 import SubredditConfigComponent from '../components/subreddit-config';
-import TimeConfigComponent from '../components/time-config';
+import GeneralConfigComponent from '../components/general-config';
 import { ConfigProvider } from '@/contexts/config';
 import Cookies from 'js-cookie';
 import ActionComponent from '../components/actions';
@@ -77,7 +77,7 @@ const ConfigurationPage = () => {
           <div className='max-w-[1400px] mx-auto px-6 py-4'>
             <div className='grid grid-cols-[70%_30%] space-x-4 pt-16'>
               <SubredditConfigComponent />
-              <TimeConfigComponent />
+              <GeneralConfigComponent />
             </div>
             <ActionComponent />
           </div>

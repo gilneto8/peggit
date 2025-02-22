@@ -30,11 +30,11 @@ export async function POST(request: Request) {
 
     // Fetch or create default configuration
     const configResult = await sql`
-      INSERT INTO configurations (user_id, general_context)
-      VALUES (${userId}, '')
+      INSERT INTO configurations (user_id, general_context, top_posts_limit, top_comments_limit, last_hours, order_by, time_filter)
+      VALUES (${userId}, '', 10, 10, 24, 'new', 'hour')
       ON CONFLICT (user_id)
       DO UPDATE SET user_id = ${userId}
-      RETURNING id, general_context
+      RETURNING id, general_context, top_posts_limit, top_comments_limit, last_hours, order_by, time_filter
     `;
 
     // Fetch forums for this configuration
@@ -56,6 +56,11 @@ export async function POST(request: Request) {
       userId: userId,
       configurations: {
         generalContext: configResult.rows[0].general_context || '',
+        topPostLimit: configResult.rows[0].top_posts_limit || 10,
+        topCommentsLimit: configResult.rows[0].top_comments_limit || 10,
+        lastHours: configResult.rows[0].last_hours || 24,
+        orderBy: configResult.rows[0].order_by || 'new',
+        timeFilter: configResult.rows[0].time_filter || 'hour',
         forums: forumsResult.rows || [],
         timeRanges: timeRangesResult.rows || [],
       },

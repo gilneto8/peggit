@@ -20,7 +20,6 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ userId, configD
     setError(null);
 
     try {
-      console.log(configData);
       const response = await fetch('/api/scrape-posts', {
         method: 'POST',
         headers: {
@@ -28,10 +27,11 @@ const DashboardComponent: React.FC<DashboardComponentProps> = ({ userId, configD
         },
         body: JSON.stringify({
           user_id: userId,
-          order_by: 'new',
-          last_hours: 2,
-          top_posts_limit: 10,
-          top_comments_limit: 5,
+          order_by: configData.orderBy,
+          last_hours: configData.lastHours,
+          time_filter: configData.timeFilter,
+          top_posts_limit: configData.topPostsLimit,
+          top_comments_limit: configData.topCommentsLimit,
         }),
       });
 

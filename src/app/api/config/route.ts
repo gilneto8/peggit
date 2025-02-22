@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
   try {
     const configResult = await sql`
-      SELECT c.id, c.general_context
+      SELECT c.id, c.general_context, c.top_posts_limit, c.top_comments_limit, c.last_hours, c.order_by, c.time_filter
       FROM users u
       LEFT JOIN configurations c ON c.user_id = u.id
       WHERE u.id = ${userId}
@@ -37,6 +37,11 @@ export async function GET(request: Request) {
       success: true,
       configurations: {
         generalContext: configResult.rows[0].general_context || '',
+        topPostsLimit: configResult.rows[0].top_posts_limit || 10,
+        topCommentsLimit: configResult.rows[0].top_comments_limit || 10,
+        lastHours: configResult.rows[0].last_hours || 24,
+        orderBy: configResult.rows[0].order_by || 'new',
+        timeFilter: configResult.rows[0].time_filter || 'hour',
         forums: forumsResult.rows || [],
         timeRanges: timeRangesResult.rows || [],
       },
@@ -49,7 +54,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { userId, generalContext, forums, timeRanges } = await request.json();
+    const { userId, generalContext, forums, timeRanges, topPostsLimit, topCommentsLimit, lastHours, orderBy, timeFilter } =
+      await request.json();
 
     // Verify user credentials against database
     const userResult = await sql`
@@ -63,10 +69,10 @@ export async function POST(request: Request) {
 
     // Insert or update configuration
     const configResult = await sql`
-      INSERT INTO configurations (user_id, general_context)
-      VALUES (${userId}, ${generalContext})
+      INSERT INTO configurations (user_id, general_context, top_posts_limit, top_comments_limit, last_hours, order_by, time_filter)
+      VALUES (${userId}, ${generalContext}, ${topPostsLimit}, ${topCommentsLimit}, ${lastHours}, ${orderBy}, ${timeFilter})
       ON CONFLICT (user_id) 
-      DO UPDATE SET general_context = ${generalContext}
+      DO UPDATE SET general_context = ${generalContext}, top_posts_limit = ${topPostsLimit}, top_comments_limit = ${topCommentsLimit}, last_hours = ${lastHours}, order_by = ${orderBy}, time_filter = ${timeFilter}
       RETURNING id
     `;
 
@@ -86,6 +92,12 @@ export async function POST(request: Request) {
       `;
     }
 
+    // Delete existing time ranges for this config
+    await sql`
+      DELETE FROM time_ranges 
+      WHERE config_id = ${configId}
+    `;
+
     // Insert new time ranges
     for (const timeRange of timeRanges) {
       await sql`
@@ -94,8 +106,13 @@ export async function POST(request: Request) {
       `;
     }
 
-    return NextResponse.json({ success: true, configId });
+    return NextResponse.json({
+      success: true,
+      configId,
+      configurations: { userId, generalContext, forums, timeRanges, topPostsLimit, topCommentsLimit, lastHours, orderBy, timeFilter },
+    });
   } catch (error) {
+    console.error(error);
     return NextResponse.json({ error: error instanceof Error ? error.message : 'Failed to save configuration' }, { status: 500 });
   }
 }

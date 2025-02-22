@@ -8,6 +8,11 @@ type ConfigContextType = {
   userId: string;
   username: string;
   generalContext: string;
+  topPostsLimit: number;
+  topCommentsLimit: number;
+  lastHours?: number;
+  orderBy: 'new' | 'top';
+  timeFilter?: 'hour' | 'day' | 'week' | 'month' | 'year' | 'all';
   forums: Forum[];
   timeRanges: TimeRange[];
 
@@ -17,6 +22,10 @@ type ConfigContextType = {
 
   // Actions
   setGeneralContext: (context: string) => void;
+  setTopPostsLimit: (limit: number) => void;
+  setTopCommentsLimit: (limit: number) => void;
+  setLastHours: (hours: number) => void;
+  setTimeFilter: (filter: 'hour' | 'day' | 'week' | 'month' | 'year' | 'all') => void;
   setForums: (forums: Forum[] | ((prev: Forum[]) => Forum[])) => void;
   setTimeRanges: (ranges: TimeRange[] | ((prev: TimeRange[]) => TimeRange[])) => void;
   saveConfiguration: () => Promise<void>;
@@ -37,6 +46,11 @@ export function ConfigProvider({
 }) {
   // State
   const [generalContext, setGeneralContext] = useState(initialData.generalContext || '');
+  const [topPostsLimit, setTopPostsLimit] = useState(initialData.topPostsLimit || 10);
+  const [topCommentsLimit, setTopCommentsLimit] = useState(initialData.topCommentsLimit || 10);
+  const [lastHours, setLastHours] = useState(initialData.lastHours || 24);
+  const [orderBy, setOrderBy] = useState(initialData.orderBy || 'new');
+  const [timeFilter, setTimeFilter] = useState(initialData.timeFilter || 'hour');
   const [forums, setForums] = useState<Forum[]>(
     initialData.forums?.map(f => ({
       id: f.id.toString(),
@@ -63,6 +77,11 @@ export function ConfigProvider({
     const hasGeneralContext = generalContext.trim().length > 0;
     const hasChanges =
       generalContext !== initialData.generalContext ||
+      topPostsLimit !== initialData.topPostsLimit ||
+      topCommentsLimit !== initialData.topCommentsLimit ||
+      lastHours !== initialData.lastHours ||
+      orderBy !== initialData.orderBy ||
+      timeFilter !== initialData.timeFilter ||
       forums.length !== initialData.forums?.length ||
       timeRanges.length !== initialData.timeRanges?.length ||
       forums.some(f => {
@@ -75,7 +94,7 @@ export function ConfigProvider({
       });
 
     return hasValidForums && !isValidating && hasGeneralContext && hasChanges;
-  }, [forums, generalContext, timeRanges, initialData]);
+  }, [forums, generalContext, timeRanges, initialData, topPostsLimit, topCommentsLimit, lastHours, orderBy, timeFilter]);
 
   // Actions
   const validateSubreddit = useCallback(
@@ -86,7 +105,7 @@ export function ConfigProvider({
       setForums(currentForums => currentForums.map(f => (f.id === forumId ? { ...f, isValidating: true } : f)));
 
       try {
-        const response = await fetch(`/api/validate-subreddit?name=${identifier}&username=${username}`);
+        const response = await fetch(`/api/validate-subreddit?name=${identifier}&username=${username}&userId=${userId}`);
         const { exists } = await response.json();
         setForums(currentForums =>
           currentForums.map(f =>
@@ -118,7 +137,7 @@ export function ConfigProvider({
         return false;
       }
     },
-    [username],
+    [username, userId],
   );
 
   const validateAllSubreddits = useCallback(async () => {
@@ -138,12 +157,18 @@ export function ConfigProvider({
         return;
       }
 
+      // Use the latest state values directly
       const response = await fetch('/api/config', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username,
+          userId,
           generalContext,
+          topPostsLimit,
+          topCommentsLimit,
+          lastHours,
+          orderBy,
+          timeFilter,
           forums,
           timeRanges: timeRanges.map(range => ({
             min: range.min,
@@ -157,9 +182,7 @@ export function ConfigProvider({
       const data = await response.json();
 
       // Update localStorage
-      const storedConfig = JSON.parse(localStorage.getItem('configData') || '{}');
-      storedConfig.configurations = data.configurations;
-      localStorage.setItem('configData', JSON.stringify(storedConfig));
+      localStorage.setItem('configData', JSON.stringify(data.configurations));
 
       toast.success('Configuration saved successfully!');
     } catch (err) {
@@ -168,13 +191,31 @@ export function ConfigProvider({
     } finally {
       setIsSaving(false);
     }
-  }, [username, generalContext, forums, timeRanges, isSaving, canSave, validateAllSubreddits]);
+  }, [
+    userId,
+    generalContext,
+    forums,
+    timeRanges,
+    isSaving,
+    canSave,
+    validateAllSubreddits,
+    topPostsLimit,
+    topCommentsLimit,
+    lastHours,
+    orderBy,
+    timeFilter,
+  ]);
 
   const value = {
     // Data
     userId,
     username,
     generalContext,
+    topPostsLimit,
+    topCommentsLimit,
+    lastHours,
+    orderBy,
+    timeFilter,
     forums,
     timeRanges,
 
@@ -184,6 +225,11 @@ export function ConfigProvider({
 
     // Actions
     setGeneralContext,
+    setTopPostsLimit,
+    setTopCommentsLimit,
+    setLastHours,
+    setOrderBy,
+    setTimeFilter,
     setForums,
     setTimeRanges,
     saveConfiguration,

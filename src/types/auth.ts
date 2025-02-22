@@ -3,6 +3,11 @@ export interface AuthResponse {
   userId: string;
   configurations: {
     generalContext: string;
+    topPostsLimit: number;
+    topCommentsLimit: number;
+    lastHours?: number;
+    orderBy: 'new' | 'top';
+    timeFilter?: 'hour' | 'day' | 'week' | 'month' | 'year' | 'all';
     forums: ForumResponse[];
     timeRanges: TimeRange[];
   };
