@@ -1,9 +1,6 @@
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// Zod schema for type validation (similar to Pydantic)
-const TimeFilterSchema = z.enum(['hour', 'day']);
-
 const ScrapeRequestSchema = z.object({
   user_id: z.string(),
   last_hours: z.number(),
@@ -24,7 +21,7 @@ export async function POST(request: Request) {
     }
 
     // Forward the request to the external API
-    const apiResponse = await fetch(`${apiUrl}/scrape`, {
+    const apiResponse = await fetch(`${apiUrl}/user-scrape`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
