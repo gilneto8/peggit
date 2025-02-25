@@ -11,8 +11,6 @@ type ConfigContextType = {
   topPostsLimit: number;
   topCommentsLimit: number;
   lastHours?: number;
-  orderBy: 'new' | 'top';
-  timeFilter?: 'hour' | 'day' | 'week' | 'month' | 'year' | 'all';
   forums: Forum[];
   timeRanges: TimeRange[];
 
@@ -25,8 +23,6 @@ type ConfigContextType = {
   setTopPostsLimit: (limit: number) => void;
   setTopCommentsLimit: (limit: number) => void;
   setLastHours: (hours: number) => void;
-  setTimeFilter: (filter: 'hour' | 'day' | 'week' | 'month' | 'year' | 'all') => void;
-  setOrderBy: (orderBy: 'new' | 'top') => void;
   setForums: (forums: Forum[] | ((prev: Forum[]) => Forum[])) => void;
   setTimeRanges: (ranges: TimeRange[] | ((prev: TimeRange[]) => TimeRange[])) => void;
   saveConfiguration: () => Promise<void>;
@@ -50,8 +46,6 @@ export function ConfigProvider({
   const [topPostsLimit, setTopPostsLimit] = useState(initialData.topPostsLimit || 10);
   const [topCommentsLimit, setTopCommentsLimit] = useState(initialData.topCommentsLimit || 10);
   const [lastHours, setLastHours] = useState(initialData.lastHours || 24);
-  const [orderBy, setOrderBy] = useState(initialData.orderBy || 'new');
-  const [timeFilter, setTimeFilter] = useState(initialData.timeFilter || 'hour');
   const [forums, setForums] = useState<Forum[]>(
     initialData.forums?.map(f => ({
       id: f.id.toString(),
@@ -81,8 +75,6 @@ export function ConfigProvider({
       topPostsLimit !== initialData.topPostsLimit ||
       topCommentsLimit !== initialData.topCommentsLimit ||
       lastHours !== initialData.lastHours ||
-      orderBy !== initialData.orderBy ||
-      timeFilter !== initialData.timeFilter ||
       forums.length !== initialData.forums?.length ||
       timeRanges.length !== initialData.timeRanges?.length ||
       forums.some(f => {
@@ -95,7 +87,7 @@ export function ConfigProvider({
       });
 
     return hasValidForums && !isValidating && hasGeneralContext && hasChanges;
-  }, [forums, generalContext, timeRanges, initialData, topPostsLimit, topCommentsLimit, lastHours, orderBy, timeFilter]);
+  }, [forums, generalContext, timeRanges, initialData, topPostsLimit, topCommentsLimit, lastHours]);
 
   // Actions
   const validateSubreddit = useCallback(
@@ -168,8 +160,6 @@ export function ConfigProvider({
           topPostsLimit,
           topCommentsLimit,
           lastHours,
-          orderBy,
-          timeFilter,
           forums,
           timeRanges: timeRanges.map(range => ({
             min: range.min,
@@ -203,8 +193,7 @@ export function ConfigProvider({
     topPostsLimit,
     topCommentsLimit,
     lastHours,
-    orderBy,
-    timeFilter,
+    forums,
   ]);
 
   const value = {
@@ -215,8 +204,6 @@ export function ConfigProvider({
     topPostsLimit,
     topCommentsLimit,
     lastHours,
-    orderBy,
-    timeFilter,
     forums,
     timeRanges,
 
@@ -229,8 +216,6 @@ export function ConfigProvider({
     setTopPostsLimit,
     setTopCommentsLimit,
     setLastHours,
-    setOrderBy,
-    setTimeFilter,
     setForums,
     setTimeRanges,
     saveConfiguration,
