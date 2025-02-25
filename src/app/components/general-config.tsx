@@ -64,6 +64,8 @@ const GeneralConfigComponent: React.FC = () => {
                 <label className='block text-sm font-medium text-gray-300 mb-1'>New from the last (hours)</label>
                 <input
                   type='number'
+                  min={1}
+                  max={12}
                   value={lastHours}
                   onChange={e => setLastHours(Number(e.target.value))}
                   className='w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
@@ -77,17 +79,13 @@ const GeneralConfigComponent: React.FC = () => {
                 <label className='block text-sm font-medium text-gray-300 mb-1'>Top in the last</label>
                 <select
                   value={timeFilter}
-                  onChange={e => setTimeFilter(e.target.value as 'hour' | 'day' | 'week' | 'month' | 'year' | 'all')}
+                  onChange={e => setTimeFilter(e.target.value as 'hour' | 'day')}
                   className='h-[42px] w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
               focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent 
               border-gray-600'
                 >
                   <option value='hour'>Hour</option>
                   <option value='day'>Day</option>
-                  <option value='week'>Week</option>
-                  <option value='month'>Month</option>
-                  <option value='year'>Year</option>
-                  <option value='all'>All</option>
                 </select>
               </div>
             )}
@@ -97,6 +95,8 @@ const GeneralConfigComponent: React.FC = () => {
               <label className='block text-sm font-medium text-gray-300 mb-1'>Max # of posts</label>
               <input
                 type='number'
+                min={1}
+                max={10}
                 value={topPostsLimit}
                 onChange={e => setTopPostsLimit(Number(e.target.value))}
                 className='w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 
@@ -109,6 +109,8 @@ const GeneralConfigComponent: React.FC = () => {
               <label className='block text-sm font-medium text-gray-300 mb-1'>Max # of comments</label>
               <input
                 type='number'
+                min={1}
+                max={15}
                 value={topCommentsLimit}
                 onChange={e => setTopCommentsLimit(Number(e.target.value))}
                 className='w-full px-3 py-2 bg-gray-700 border-2 rounded-md text-gray-100 

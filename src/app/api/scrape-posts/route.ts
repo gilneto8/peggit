@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { z } from 'zod';
 
 // Zod schema for type validation (similar to Pydantic)
-const TimeFilterSchema = z.enum(['hour', 'day', 'week', 'month', 'year', 'all']);
+const TimeFilterSchema = z.enum(['hour', 'day']);
 
 const ScrapeRequestSchema = z
   .object({
